@@ -7,7 +7,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
     :root{
@@ -179,11 +179,14 @@
 
     .hint{ font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 8px; line-height:1.4; }
 
+    /* BOTÕES GERAIS */
     .btn{
-      border: 1px solid rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.2);
       background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-      color: #fff; border-radius: 12px; padding: 12px 16px;
-      font-weight: 700; cursor: pointer; font-size: 13px;
+      color: #fff; 
+      border-radius: 12px; 
+      padding: 10px 16px; 
+      font-weight: 700; cursor: pointer; font-size: 12px;
       text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s; width: 100%;
     }
     .btn:hover{
@@ -192,6 +195,28 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
     .btn:active{ transform: translateY(1px); box-shadow: none; }
+
+    /* --- BOTÕES DE AÇÃO ESPECIAIS (ROXO ESCURO) --- */
+    /* Download All, Save JPG, Save Project, Load Project */
+    #btnDownloadAll, #saveJpg, #btnSaveProject, #btnLoadProject {
+      background: #240046; /* Roxo Escuro Sólido */
+      border: 1px solid rgba(255, 255, 255, 0.3); /* Borda Clara visível */
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+    
+    #btnDownloadAll:hover, #saveJpg:hover, #btnSaveProject:hover, #btnLoadProject:hover {
+      background: #3c096c; /* Um tom mais claro no hover */
+      border-color: #fff;
+      box-shadow: 0 0 15px rgba(123, 44, 191, 0.6); /* Glow Roxo */
+      transform: translateY(-2px);
+    }
+
+    .project-actions {
+      display: flex; gap: 10px; margin-bottom: 24px;
+      padding: 10px; background: rgba(0,0,0,0.2); border-radius: 12px;
+    }
+    #btnSaveProject, #btnLoadProject { font-size: 11px; padding: 8px 10px; }
+
 
     /* SWITCHER */
     .format-switcher{
@@ -219,17 +244,20 @@
     #btnViewAllSwitch:hover { background: rgba(255, 255, 255, 0.2); }
     #btnViewAllSwitch.active { background: #00b4d8; border-color: #00b4d8; box-shadow: 0 4px 12px rgba(0, 180, 216, 0.4); }
 
+    /* --- TOOLBAR --- */
     .toolbar{ display: flex; gap: 6px; margin-bottom: 8px; justify-content: flex-end; }
+    
     .toolBtn{
       background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1);
-      color: #fff; border-radius: 6px; width: 28px; height: 28px;
-      font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s;
+      color: #fff; border-radius: 6px; 
+      padding: 0 10px; height: 28px; 
+      font-size: 10px; font-weight: 700; cursor: pointer; transition: all .2s;
       display: flex; align-items: center; justify-content: center;
-      font-family: serif;
+      font-family: Montserrat, sans-serif; letter-spacing: 0.05em;
     }
     .toolBtn:hover{ background: rgba(255,255,255,0.25); }
-    .toolBtn[data-cmd="bold"] { font-weight: 900; font-family: sans-serif; }
-    .toolBtn[data-cmd="italic"] { font-style: italic; font-family: serif; }
+    .toolBtn[data-cmd="bold"] { font-weight: 900; }
+    .toolBtn[data-cmd="italic"] { font-style: italic; }
 
     .stage{
       display:flex; justify-content:center; align-items:flex-start;
@@ -249,7 +277,6 @@
     .zoomBtn:hover{ opacity: 1; }
     .zoomLabel{ font-size: 11px; opacity:.9; color: #fff; font-weight: 600; min-width: 60px; text-align: center; }
 
-    /* GRID DO POSTER */
     .posters-grid {
       display: grid; gap: 40px; transform-origin: top center;
       transform: scale(var(--scale)); transition: transform 0.3s ease;
@@ -307,7 +334,8 @@
     }
     .poster .eventName b { font-weight: 700; }
     .poster .eventName i { font-style: italic; }
-    .poster .eventName .reg { font-size: .5em; vertical-align: super; }
+    /* AQUI ESTÁ O AJUSTE PARA O ® */
+    .poster .reg { font-size: 0.5em; vertical-align: super; }
 
     .poster .banner { position: relative; width: 100%; height: 672px; background: rgba(0,0,0,.08); z-index: 2; overflow:visible; }
     .poster .bannerClip { position:absolute; inset:0; overflow:hidden; z-index:1; }
@@ -335,10 +363,12 @@
     .poster .logosBar .tag { font-size: 12px; font-weight: 800; color:#000; margin-right: 4px; }
     .poster .logos { display:flex; gap: 10px; }
     
+    /* CORREÇÃO DO LOGO OVERFLOW */
     .poster .logoSlot { width: 88px; height: 50px; border-radius: 8px; border: 1px dashed rgba(0,0,0,.25); display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,.02); position:relative; }
     .poster .logoSlot img { width:100%; height:100%; object-fit: contain; display:none; }
     .poster .logoSlot span { font-size: 10px; color: rgba(0,0,0,.5); font-weight: 800; }
 
+    /* REGRAS DE OCULTAÇÃO */
     .poster.banner-site .header, .poster.banner-site .content, .poster.banner-site .speakersWrap, .poster.banner-site .bgImage { display: none; }
     .poster.banner-site .banner { display: block; position: absolute; inset: 0; width: 100%; height: 100%; background: transparent; }
     .poster.banner-site .bannerClip { position: absolute; inset: 0; }
@@ -348,11 +378,6 @@
     .poster.banner-global .banner { display: block; position: absolute; inset: 0; width: 100%; height: 100%; background: transparent; }
     .poster.banner-global .bannerClip { position: absolute; inset: 0; }
     .poster.banner-global .banner::after { display: none; }
-
-    #btnDownloadAll { background: #240046; border: 1px solid rgba(180, 100, 255, 0.3); box-shadow: 0 0 12px rgba(80, 0, 150, 0.6); }
-    #btnDownloadAll:hover { background: #3c096c; box-shadow: 0 0 20px rgba(120, 50, 255, 0.8); }
-    #saveJpg { background: #7b2cbf; border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 0 15px rgba(180, 100, 255, 0.6); }
-    #saveJpg:hover { background: #9d4edd; box-shadow: 0 0 25px rgba(200, 150, 255, 0.9); }
 
     /* LOADING OVERLAY */
     .loading-overlay {
@@ -384,6 +409,12 @@
         <h2>EDITOR DE NOTÍCIA</h2>
       </div>
 
+      <div class="project-actions">
+        <button class="btn" id="btnSaveProject">SALVAR PROJETO</button>
+        <button class="btn" id="btnLoadProject">CARREGAR PROJETO</button>
+        <input type="file" id="importFile" accept=".json" style="display:none;" />
+      </div>
+
       <div class="format-switcher">
         <button class="format-btn active" id="btnStory" onclick="setFormat('reels')">REELS</button>
         <button class="format-btn" id="btnFeed" onclick="setFormat('feed')">FEED</button>
@@ -412,8 +443,8 @@
         <div class="field">
           <label>Nome do evento</label>
           <div class="toolbar">
-            <button class="toolBtn" onclick="formatText('bold')">B</button>
-            <button class="toolBtn" onclick="formatText('italic')">I</button>
+            <button class="toolBtn" data-cmd="bold" onclick="formatText('bold')" title="Negrito">BOLD</button>
+            <button class="toolBtn" data-cmd="italic" onclick="formatText('italic')" title="Itálico">ITÁLICO</button>
           </div>
           <div id="eventNameInput" class="rich-input" contenteditable="true">NEWS ASH®2025</div>
         </div>
@@ -421,8 +452,8 @@
         <div class="field">
           <label>Texto do meio</label>
           <div class="toolbar">
-            <button class="toolBtn" onclick="formatText('bold')">B</button>
-            <button class="toolBtn" onclick="formatText('italic')">I</button>
+            <button class="toolBtn" data-cmd="bold" onclick="formatText('bold')" title="Negrito">BOLD</button>
+            <button class="toolBtn" data-cmd="italic" onclick="formatText('italic')" title="Itálico">ITÁLICO</button>
           </div>
           <div id="middleTextInput" class="rich-input" contenteditable="true">Texto para inserir notícia.</div>
         </div>
@@ -566,7 +597,104 @@
       document.getElementById('loadingOverlay').classList.remove('active');
     }
 
-    // --- Auto-Save ---
+    // --- SAVE / LOAD PROJECT ---
+    function saveProjectFile(){
+      // Coleta dados
+      const bannerImg = document.querySelector('.bannerImage').style.backgroundImage;
+      const bgImg = document.querySelector('.bgImage').style.backgroundImage;
+      
+      const cleanUrl = (str) => {
+        if(!str || str==='none') return '';
+        return str.replace(/^url\(['"]?/, '').replace(/['"]?\)$/, '');
+      };
+
+      const projectData = {
+        eventName: $('#eventNameInput').innerHTML,
+        middleText: $('#middleTextInput').innerHTML,
+        headerColor: $('#headerHex').value,
+        bgColor: $('#bgHex').value,
+        images: {
+          banner: cleanUrl(bannerImg),
+          background: cleanUrl(bgImg),
+          speaker1: $('.speakerImg1').src,
+          speaker2: $('.speakerImg2').src
+        },
+        logos: {}
+      };
+
+      ['r1','r2','a1','a2','a3','a4','a5'].forEach(id => {
+        const img = document.querySelector(`.logo-${id}`);
+        if(img && img.src && img.style.display !== 'none'){
+          projectData.logos[id] = img.src;
+        }
+      });
+
+      const blob = new Blob([JSON.stringify(projectData)], {type: "application/json"});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = getSmartName('Project.json');
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+
+    function loadProjectFile(file){
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          
+          if(data.eventName) { $('#eventNameInput').innerHTML = data.eventName; $('#eventNameInput').dispatchEvent(new Event('input')); }
+          if(data.middleText) { $('#middleTextInput').innerHTML = data.middleText; $('#middleTextInput').dispatchEvent(new Event('input')); }
+          
+          if(data.headerColor) { 
+            $('#headerHex').value = data.headerColor; $('#headerPicker').value = data.headerColor; 
+            document.documentElement.style.setProperty('--header-color', data.headerColor);
+          }
+          if(data.bgColor) {
+            $('#bgHex').value = data.bgColor;
+            document.documentElement.style.setProperty('--bg-color', data.bgColor);
+          }
+
+          if(data.images){
+            if(data.images.banner) {
+              $all('.bannerImage').forEach(d => { d.style.backgroundImage = `url(${data.images.banner})`; d.nextElementSibling.style.display='none'; });
+            }
+            if(data.images.background) {
+              $all('.bgImage').forEach(d => d.style.backgroundImage = `url(${data.images.background})`);
+            }
+            if(data.images.speaker1 && data.images.speaker1.startsWith('data:')) {
+              $all('.speakerImg1').forEach(img => { 
+                img.src=data.images.speaker1; img.style.display='block'; 
+                img.nextElementSibling.style.display='none'; 
+                img.closest('.speakerSlot').classList.add('hasImage');
+              });
+            }
+            if(data.images.speaker2 && data.images.speaker2.startsWith('data:')) {
+              $all('.speakerImg2').forEach(img => { 
+                img.src=data.images.speaker2; img.style.display='block'; 
+                img.nextElementSibling.style.display='none'; 
+                img.closest('.speakerSlot').classList.add('hasImage');
+                img.closest('.speakerSlot').style.display='block';
+              });
+            }
+          }
+
+          if(data.logos){
+            Object.keys(data.logos).forEach(id => {
+              const src = data.logos[id];
+              $all(`.logo-${id}`).forEach(img => {
+                img.src = src; img.style.display='block';
+                if(img.nextElementSibling) img.nextElementSibling.style.display='none';
+              });
+            });
+          }
+
+          alert('Projeto carregado com sucesso!');
+        } catch(err){ console.error(err); alert('Erro ao ler arquivo do projeto.'); }
+      };
+      reader.readAsText(file);
+    }
+
+    // --- Auto-Save (LocalStorage) ---
     function saveDraft(){
       const data = {
         headerColor: $('#headerHex').value,
@@ -592,10 +720,9 @@
         if(d.eventName) { $('#eventNameInput').innerHTML = d.eventName; }
         if(d.middleText) { $('#middleTextInput').innerHTML = d.middleText; }
         
-        // Trigger updates
         $('#eventNameInput').dispatchEvent(new Event('input'));
         $('#middleTextInput').dispatchEvent(new Event('input'));
-      }catch(e){ console.error("Erro ao carregar rascunho", e); }
+      }catch(e){ }
     }
 
     window.setFormat = function(fmt){
@@ -652,7 +779,7 @@
           if(isHTML) target.innerHTML = styleRegSymbol(val);
           else target.textContent = val;
         });
-        saveDraft(); // Auto-save
+        saveDraft(); 
       };
       el.addEventListener('input', update);
       // Init run handled by loadDraft or manual
@@ -690,7 +817,6 @@
       });
     }
 
-    // Drag and Drop Logic
     function enableDragDrop(){
       const inputs = $all('input[type="file"]');
       inputs.forEach(input => {
@@ -710,7 +836,15 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      loadDraft(); // Restore data
+      loadDraft(); 
+
+      // Botões de Projeto
+      $('#btnSaveProject').onclick = saveProjectFile;
+      $('#btnLoadProject').onclick = () => $('#importFile').click();
+      $('#importFile').onchange = (e) => {
+        if(e.target.files[0]) loadProjectFile(e.target.files[0]);
+        $('#importFile').value = ''; 
+      };
 
       const headerPicker = $('#headerPicker');
       const headerHex = $('#headerHex');
@@ -800,7 +934,6 @@
     window.formatText = (cmd) => document.execCommand(cmd, false, null);
     function styleRegSymbol(html){ return html.replace(/®/g, '<span class="reg">®</span>'); }
 
-    // Smart Filename
     function getSmartName(suffix){
       const raw = document.getElementById('eventNameInput').innerText;
       const clean = raw.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').substring(0, 30);
@@ -851,7 +984,7 @@
         a.href = canvas.toDataURL('image/jpeg', 0.95);
         a.download = filename;
         document.body.appendChild(a); a.click(); a.remove();
-        return true; // For blob handling in batch
+        return true;
       });
     }
 
