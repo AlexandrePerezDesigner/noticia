@@ -1,0 +1,936 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Editor de Notícia Pro (Tribe)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      /* === VARIÁVEIS DE FORMATO === */
+      --poster-w: 1080px;           
+      --poster-h: 1920px;           
+      --scale: .45;
+
+      /* Header Dinâmico */
+      --header-h: 257px;            
+      --header-padding: 26px 34px;
+      --event-margin-top: 170px;    
+      
+      /* Footer Dinâmico */
+      --footer-bottom: 520px;       
+
+      /* Cores e Tamanhos Fixos */
+      --bg-color: #ececec;
+      --header-color: #e21f26;
+      --banner-h: 672px;
+      --banner-bar-h: 28px;
+      --event-font-size: 48px;
+      --content-padding: 92px 90px;
+    }
+
+    *{ box-sizing: border-box; }
+
+    body{
+      margin:0;
+      font-family: Montserrat, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top left, #3a005c, #000000);
+      background-attachment: fixed;
+      color:#e0e0e0;
+      overflow-x:hidden;
+      min-height: 100vh;
+    }
+
+    .app{
+      display:grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+      padding: 24px;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+    /* PAINEL */
+    .panel{
+      background: rgba(20, 20, 20, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+      border-radius: 24px;
+      padding: 20px;
+      position: sticky;
+      top: 18px;
+      max-height: calc(100vh - 48px);
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    /* HEADER DO PAINEL */
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .panel-logo {
+      width: 110px;
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+
+    .panel h2{
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      opacity: 0.95;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      line-height: 1.1;
+    }
+
+    .field{
+      margin: 16px 0;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: background 0.2s;
+    }
+
+    .field:hover{ background: rgba(0, 0, 0, 0.4); border-color: rgba(255, 255, 255, 0.1); }
+
+    /* Drag Style */
+    .field.drag-active {
+      background: rgba(82, 19, 185, 0.3);
+      border-color: #7b2cbf;
+      box-shadow: 0 0 15px rgba(123, 44, 191, 0.4);
+    }
+
+    .field label{
+      display:block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 8px;
+      letter-spacing: 0.05em;
+    }
+
+    .row{ display:flex; gap:10px; align-items:center; }
+
+    input[type="text"], input[type="file"]{
+      width:100%; font: inherit; color:#fff;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px; padding: 12px; outline:none;
+      transition: all 0.2s ease; font-size: 13px;
+    }
+    input[type="text"]:focus{
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.4);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+    }
+    input[type="file"]::file-selector-button {
+      background: rgba(255,255,255,0.1); border: none; color: #fff;
+      padding: 4px 8px; border-radius: 6px; margin-right: 10px; cursor: pointer;
+    }
+
+    .rich-input {
+      width: 100%;
+      min-height: 90px;
+      font-family: inherit;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 12px;
+      outline: none;
+      transition: all 0.2s ease;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      cursor: text;
+    }
+    .rich-input:focus {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.4);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+    }
+    .rich-input b, .rich-input strong { font-weight: 700; color: #fff; }
+    .rich-input i, .rich-input em { font-style: italic; color: #fff; }
+
+    .hint{ font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 8px; line-height:1.4; }
+
+    .btn{
+      border: 1px solid rgba(255,255,255,0.15);
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      color: #fff; border-radius: 12px; padding: 12px 16px;
+      font-weight: 700; cursor: pointer; font-size: 13px;
+      text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s; width: 100%;
+    }
+    .btn:hover{
+      background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+      border-color: rgba(255,255,255,0.4); transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .btn:active{ transform: translateY(1px); box-shadow: none; }
+
+    /* SWITCHER */
+    .format-switcher{
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;
+      background: rgba(0,0,0,0.3); padding: 8px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);
+    }
+    .format-btn{
+      flex: 1 1 45%; background: transparent; color: rgba(255,255,255,0.5);
+      padding: 10px; border-radius: 10px; font-weight: 700; cursor: pointer;
+      font-size: 11px; text-align: center; border: 1px solid transparent; transition: all 0.2s;
+    }
+    .format-btn:hover{ color: #fff; background: rgba(255,255,255,0.05); }
+    
+    .format-btn.active{
+      background: #5213b9; 
+      color: white;
+      box-shadow: 0 4px 12px rgba(82, 19, 185, 0.5);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    #btnViewAllSwitch {
+      background: rgba(255, 255, 255, 0.1); color: #fff; border: 1px solid rgba(255, 255, 255, 0.2);
+      width: 100%; margin-bottom: 24px;
+    }
+    #btnViewAllSwitch:hover { background: rgba(255, 255, 255, 0.2); }
+    #btnViewAllSwitch.active { background: #00b4d8; border-color: #00b4d8; box-shadow: 0 4px 12px rgba(0, 180, 216, 0.4); }
+
+    .toolbar{ display: flex; gap: 6px; margin-bottom: 8px; justify-content: flex-end; }
+    .toolBtn{
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1);
+      color: #fff; border-radius: 6px; width: 28px; height: 28px;
+      font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s;
+      display: flex; align-items: center; justify-content: center;
+      font-family: serif;
+    }
+    .toolBtn:hover{ background: rgba(255,255,255,0.25); }
+    .toolBtn[data-cmd="bold"] { font-weight: 900; font-family: sans-serif; }
+    .toolBtn[data-cmd="italic"] { font-style: italic; font-family: serif; }
+
+    .stage{
+      display:flex; justify-content:center; align-items:flex-start;
+      padding: 20px; position: sticky; top: 18px;
+      height: calc(100vh - 48px); overflow: auto;
+      background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 24px; backdrop-filter: blur(5px);
+    }
+    .zoomWrap{ width: 100%; display:flex; flex-direction:column; align-items:center; }
+    .zoomHint{ margin-top: 16px; font-size: 12px; font-weight: 500; opacity: .6; text-align:center; color: #fff; }
+    .zoomControls{
+      display:flex; gap: 8px; justify-content:center; align-items:center;
+      margin: 12px 0 0; background: rgba(0,0,0,0.6); padding: 6px 12px;
+      border-radius: 30px; border: 1px solid rgba(255,255,255,0.15);
+    }
+    .zoomBtn{ background: transparent; border: none; color: #fff; font-weight: 700; font-size: 16px; cursor:pointer; padding: 0 8px; opacity: 0.7; }
+    .zoomBtn:hover{ opacity: 1; }
+    .zoomLabel{ font-size: 11px; opacity:.9; color: #fff; font-weight: 600; min-width: 60px; text-align: center; }
+
+    /* GRID DO POSTER */
+    .posters-grid {
+      display: grid; gap: 40px; transform-origin: top center;
+      transform: scale(var(--scale)); transition: transform 0.3s ease;
+    }
+    .posters-grid.mode-single .poster-wrapper { display: none; }
+    .posters-grid.mode-single .poster-wrapper.active { display: block; }
+    .posters-grid.mode-all {
+      grid-template-columns: repeat(2, auto); align-items: start; justify-content: center; width: auto;
+    }
+    .posters-grid.mode-all .poster-wrapper { display: block; margin-bottom: 20px; }
+
+    .poster-wrapper { position: relative; }
+    .poster-label {
+      position: absolute; top: -40px; left: 0; width: 100%;
+      text-align: center; color: #fff; font-size: 32px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 1px; opacity: 0; pointer-events: none;
+    }
+    .posters-grid.mode-all .poster-label { opacity: 0.9; }
+
+    /* === POSTER BASE === */
+    .poster{
+      width: var(--local-w); height: var(--local-h);
+      border-radius: 0; overflow:hidden;
+      box-shadow: 0 30px 90px rgba(0,0,0,0.8);
+      position: relative; background: var(--bg-color);
+      transform-origin: top left;
+    }
+
+    .poster.reels { 
+      --local-w: 1080px; --local-h: 1920px; 
+      --header-h: 257px; --header-pad: 26px 34px; --evt-margin: 170px; --ft-btm: 520px;
+    }
+    .poster.feed { 
+      --local-w: 1080px; --local-h: 1350px; 
+      --header-h: 70px;  --header-pad: 20px 34px; --evt-margin: -8px;  --ft-btm: 100px;
+    }
+    .poster.banner-site { 
+      --local-w: 1860px; --local-h: 830px; 
+      --ft-btm: 50px;
+    }
+    .poster.banner-global { 
+      --local-w: 1860px; --local-h: 830px; 
+    }
+
+    .poster .bgImage { position:absolute; inset:0; background-size: cover; background-position: center; z-index: 0; }
+    
+    .poster .header { 
+      position: relative; width: 100%; height: var(--header-h); 
+      background: var(--header-color); padding: var(--header-pad); 
+      display:flex; z-index: 3; 
+    }
+    .poster .eventName { 
+      margin-top: var(--evt-margin); font-size: 48px; letter-spacing: .06em; 
+      font-weight: 400; text-transform: uppercase; color:#fff; line-height:1.1; 
+    }
+    .poster .eventName b { font-weight: 700; }
+    .poster .eventName i { font-style: italic; }
+    .poster .eventName .reg { font-size: .5em; vertical-align: super; }
+
+    .poster .banner { position: relative; width: 100%; height: 672px; background: rgba(0,0,0,.08); z-index: 2; overflow:visible; }
+    .poster .bannerClip { position:absolute; inset:0; overflow:hidden; z-index:1; }
+    .poster .banner::after { content:""; position:absolute; left:0; right:0; bottom:0; height: 28px; background: var(--header-color); z-index:4; }
+    .poster .bannerImage { position:absolute; inset:0; background-size: cover; background-position: center; z-index: 1; }
+    .poster .bannerPlaceholder { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color: rgba(255,255,255,.9); font-weight:900; background: rgba(0,0,0,.2); z-index:2; }
+
+    .poster .content { position: relative; padding: 92px 90px; z-index: 2; text-align: center; }
+    .poster .title { margin: 0; color:#1b1b1b; font-size: 46px; font-weight: 400; letter-spacing: .01em; line-height: 1.2; }
+    .poster .title b { font-weight: 800; } 
+    .poster .title i { font-style: italic; }
+
+    .poster .speakersWrap { position:absolute; left: 64px; bottom: -58px; display:flex; align-items: flex-end; gap: 14px; z-index: 999; }
+    .poster .speakerSlot { width: 224px; height: 271px; border-radius: 18px; border: 2px dashed rgba(255,255,255,.55); position: relative; overflow: hidden; }
+    .poster .speakerSlot.hasImage { border: none; }
+    .poster .speakerSlot img { width:100%; height:100%; object-fit: cover; display:none; }
+    .poster .speakerPlaceholder { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; font-weight:900; font-size:12px; background: rgba(0,0,0,.12); color:#fff; }
+
+    .poster .logosBar { 
+      position: absolute; left: 50%; bottom: var(--ft-btm); transform: translateX(-50%); 
+      width: 954px; height: 84px; background: #ffffff; border-radius: 999px; border: 2px solid #ffffff; 
+      display: grid; grid-template-columns: auto 1fr auto 2fr; align-items: center; column-gap: 14px; padding: 10px 18px; 
+      box-shadow: 0 6px 14px rgba(0,0,0,.18); z-index: 5; 
+    }
+    .poster .logosBar .tag { font-size: 12px; font-weight: 800; color:#000; margin-right: 4px; }
+    .poster .logos { display:flex; gap: 10px; }
+    
+    .poster .logoSlot { width: 88px; height: 50px; border-radius: 8px; border: 1px dashed rgba(0,0,0,.25); display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,.02); position:relative; }
+    .poster .logoSlot img { width:100%; height:100%; object-fit: contain; display:none; }
+    .poster .logoSlot span { font-size: 10px; color: rgba(0,0,0,.5); font-weight: 800; }
+
+    .poster.banner-site .header, .poster.banner-site .content, .poster.banner-site .speakersWrap, .poster.banner-site .bgImage { display: none; }
+    .poster.banner-site .banner { display: block; position: absolute; inset: 0; width: 100%; height: 100%; background: transparent; }
+    .poster.banner-site .bannerClip { position: absolute; inset: 0; }
+    .poster.banner-site .banner::after { display: none; }
+
+    .poster.banner-global .header, .poster.banner-global .content, .poster.banner-global .speakersWrap, .poster.banner-global .bgImage, .poster.banner-global .logosBar { display: none; }
+    .poster.banner-global .banner { display: block; position: absolute; inset: 0; width: 100%; height: 100%; background: transparent; }
+    .poster.banner-global .bannerClip { position: absolute; inset: 0; }
+    .poster.banner-global .banner::after { display: none; }
+
+    #btnDownloadAll { background: #240046; border: 1px solid rgba(180, 100, 255, 0.3); box-shadow: 0 0 12px rgba(80, 0, 150, 0.6); }
+    #btnDownloadAll:hover { background: #3c096c; box-shadow: 0 0 20px rgba(120, 50, 255, 0.8); }
+    #saveJpg { background: #7b2cbf; border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 0 15px rgba(180, 100, 255, 0.6); }
+    #saveJpg:hover { background: #9d4edd; box-shadow: 0 0 25px rgba(200, 150, 255, 0.9); }
+
+    /* LOADING OVERLAY */
+    .loading-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      backdrop-filter: blur(8px); display: none;
+    }
+    .loading-overlay.active { display: flex; }
+    .spinner {
+      width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1);
+      border-top-color: #7b2cbf; border-radius: 50%;
+      animation: spin 1s linear infinite; margin-bottom: 16px;
+    }
+    .loading-text { color: #fff; font-weight: 700; font-size: 16px; letter-spacing: 1px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+
+<body>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loadingText">PROCESSANDO...</div>
+  </div>
+
+  <div class="app">
+    <aside class="panel">
+      <div class="panel-header">
+        <img src="tribe.png" class="panel-logo" alt="Tribe Logo">
+        <h2>EDITOR DE NOTÍCIA</h2>
+      </div>
+
+      <div class="format-switcher">
+        <button class="format-btn active" id="btnStory" onclick="setFormat('reels')">REELS</button>
+        <button class="format-btn" id="btnFeed" onclick="setFormat('feed')">FEED</button>
+        <button class="format-btn" id="btnBanner" onclick="setFormat('banner-site')">BANNER-SITE</button>
+        <button class="format-btn" id="btnBannerOnly" onclick="setFormat('banner-global')">BANNER-GLOBAL</button>
+      </div>
+
+      <button class="format-btn" id="btnViewAllSwitch" onclick="toggleViewAll()">VER TODOS</button>
+
+      <div class="field">
+        <label>Cor do header</label>
+        <div class="row">
+          <input id="headerPicker" type="color" value="#e21f26" style="width:44px; height:44px; padding:0; border:none; background:none; cursor:pointer;" />
+          <input id="headerHex" type="text" value="#e21f26" placeholder="#ff0000" style="flex:1" />
+          <button class="btn" id="applyHeader" style="width:auto">OK</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Imagem do Banner</label>
+        <input id="bannerFile" type="file" accept="image/*" />
+        <button class="btn" id="clearBanner" style="margin-top:10px;">Remover Imagem</button>
+      </div>
+
+      <div id="textFieldsGroup">
+        <div class="field">
+          <label>Nome do evento</label>
+          <div class="toolbar">
+            <button class="toolBtn" onclick="formatText('bold')">B</button>
+            <button class="toolBtn" onclick="formatText('italic')">I</button>
+          </div>
+          <div id="eventNameInput" class="rich-input" contenteditable="true">NEWS ASH®2025</div>
+        </div>
+
+        <div class="field">
+          <label>Texto do meio</label>
+          <div class="toolbar">
+            <button class="toolBtn" onclick="formatText('bold')">B</button>
+            <button class="toolBtn" onclick="formatText('italic')">I</button>
+          </div>
+          <div id="middleTextInput" class="rich-input" contenteditable="true">Texto para inserir notícia.</div>
+        </div>
+
+        <div class="field">
+          <label>Speaker 1</label>
+          <input id="speakerFile1" type="file" accept="image/*" />
+          <button class="btn" id="clearSpeaker1" style="margin-top:10px;">Remover</button>
+        </div>
+        <div class="field">
+          <label>Speaker 2</label>
+          <input id="speakerFile2" type="file" accept="image/*" />
+          <button class="btn" id="clearSpeaker2" style="margin-top:10px;">Remover</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Background</label>
+        <div class="row" style="margin-bottom:10px;">
+          <input id="bgHex" type="text" value="#ececec" />
+          <button class="btn" id="applyBg" style="width:auto">OK</button>
+        </div>
+        <input id="bgFile" type="file" accept="image/*" />
+        <button class="btn" id="clearBg" style="margin-top:10px;">Remover Imagem</button>
+      </div>
+
+      <div class="field">
+        <label>Logos (Realização / Apoio)</label>
+        <div style="font-size:10px; opacity:0.7; margin-bottom:5px">Realização (1 e 2):</div>
+        <input class="logoInput" data-target="r1" type="file" accept="image/*" />
+        <input class="logoInput" data-target="r2" type="file" accept="image/*" style="margin-top:4px" />
+        <div style="font-size:10px; opacity:0.7; margin:10px 0 5px">Apoio (1 a 5):</div>
+        <input class="logoInput" data-target="a1" type="file" accept="image/*" />
+        <input class="logoInput" data-target="a2" type="file" accept="image/*" style="margin-top:4px" />
+        <input class="logoInput" data-target="a3" type="file" accept="image/*" style="margin-top:4px" />
+        <input class="logoInput" data-target="a4" type="file" accept="image/*" style="margin-top:4px" />
+        <input class="logoInput" data-target="a5" type="file" accept="image/*" style="margin-top:4px" />
+      </div>
+
+      <div class="row" style="gap:10px; margin-top:20px;">
+        <button class="btn" id="btnDownloadAll">Baixar 4 Imagens</button>
+        <button class="btn" id="saveJpg">Baixar JPG (Atual)</button>
+      </div>
+      <div class="row" style="margin-top:10px">
+         <button class="btn" id="resetAll" style="background: rgba(255,255,255,0.05);">Resetar Tudo</button>
+      </div>
+    </aside>
+
+    <main class="stage">
+      <div class="zoomWrap">
+        <div class="zoomControls" aria-label="Zoom">
+          <button class="zoomBtn" id="zoomOut">−</button>
+          <span class="zoomLabel" id="zoomLabel">Zoom</span>
+          <button class="zoomBtn" id="zoomIn">+</button>
+          <button class="zoomBtn" id="zoomReset" style="font-size:11px;">AUTO</button>
+        </div>
+
+        <div id="postersGrid" class="posters-grid mode-single">
+          <div class="poster-wrapper active" id="wrap-reels" data-type="reels">
+            <div class="poster-label">Reels (1080x1920)</div>
+            <div class="poster reels"></div>
+          </div>
+          <div class="poster-wrapper" id="wrap-feed" data-type="feed">
+            <div class="poster-label">Feed (1080x1350)</div>
+            <div class="poster feed"></div>
+          </div>
+          <div class="poster-wrapper" id="wrap-banner-site" data-type="banner-site">
+            <div class="poster-label">Banner Site (1860x830)</div>
+            <div class="poster banner-site"></div>
+          </div>
+          <div class="poster-wrapper" id="wrap-banner-global" data-type="banner-global">
+            <div class="poster-label">Banner Global (1860x830)</div>
+            <div class="poster banner-global"></div>
+          </div>
+        </div>
+        
+        <div class="zoomHint">Use o menu à esquerda para editar.</div>
+      </div>
+    </main>
+  </div>
+
+  <template id="posterTemplate">
+    <div class="bgImage"></div>
+    <header class="header">
+      <div class="eventName">NEWS ASH®2025</div>
+    </header>
+    <section class="banner">
+      <div class="bannerClip">
+        <div class="bannerImage"></div>
+        <div class="bannerPlaceholder">IMAGEM DO BANNER</div>
+      </div>
+      <div class="speakersWrap">
+        <div class="speakerSlot speakerSlot1"><img class="speakerImg1" /><div class="speakerPlaceholder">SPEAKER 1</div></div>
+        <div class="speakerSlot speakerSlot2" style="display:none;"><img class="speakerImg2" /><div class="speakerPlaceholder">SPEAKER 2</div></div>
+      </div>
+    </section>
+    <section class="content">
+      <h1 class="title middleTitle">Texto para inserir notícia.</h1>
+    </section>
+    <div class="logosBar">
+      <div class="tag">Realização</div>
+      <div class="logos logosReal">
+        <div class="logoSlot"><img class="logo-r1"/><span>Logo</span></div>
+        <div class="logoSlot"><img class="logo-r2"/><span>Logo</span></div>
+      </div>
+      <div class="tag">Apoio<br>Educacional</div>
+      <div class="logos logosApoio">
+        <div class="logoSlot"><img class="logo-a1"/><span>Logo</span></div>
+        <div class="logoSlot"><img class="logo-a2"/><span>Logo</span></div>
+        <div class="logoSlot"><img class="logo-a3"/><span>Logo</span></div>
+        <div class="logoSlot"><img class="logo-a4"/><span>Logo</span></div>
+        <div class="logoSlot"><img class="logo-a5"/><span>Logo</span></div>
+      </div>
+    </div>
+    <div class="safe"></div>
+  </template>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <script>
+    "use strict";
+
+    function $(sel){ return document.querySelector(sel); }
+    function $all(sel){ return Array.from(document.querySelectorAll(sel)); }
+    
+    (function initPosters(){
+      const tpl = document.getElementById('posterTemplate').content;
+      $all('.poster').forEach(el => el.appendChild(tpl.cloneNode(true)));
+    })();
+
+    let currentFormat = 'reels';
+    let isViewAll = false;
+
+    // --- Loading Overlay Control ---
+    function startLoading(msg){
+      document.getElementById('loadingText').innerText = msg || "PROCESSANDO...";
+      document.getElementById('loadingOverlay').classList.add('active');
+    }
+    function stopLoading(){
+      document.getElementById('loadingOverlay').classList.remove('active');
+    }
+
+    // --- Auto-Save ---
+    function saveDraft(){
+      const data = {
+        headerColor: $('#headerHex').value,
+        bgColor: $('#bgHex').value,
+        eventName: $('#eventNameInput').innerHTML,
+        middleText: $('#middleTextInput').innerHTML
+      };
+      localStorage.setItem('noticiaProDraft', JSON.stringify(data));
+    }
+    function loadDraft(){
+      const raw = localStorage.getItem('noticiaProDraft');
+      if(!raw) return;
+      try{
+        const d = JSON.parse(raw);
+        if(d.headerColor) { 
+          $('#headerHex').value = d.headerColor; $('#headerPicker').value = d.headerColor; 
+          document.documentElement.style.setProperty('--header-color', d.headerColor);
+        }
+        if(d.bgColor) {
+          $('#bgHex').value = d.bgColor; 
+          document.documentElement.style.setProperty('--bg-color', d.bgColor);
+        }
+        if(d.eventName) { $('#eventNameInput').innerHTML = d.eventName; }
+        if(d.middleText) { $('#middleTextInput').innerHTML = d.middleText; }
+        
+        // Trigger updates
+        $('#eventNameInput').dispatchEvent(new Event('input'));
+        $('#middleTextInput').dispatchEvent(new Event('input'));
+      }catch(e){ console.error("Erro ao carregar rascunho", e); }
+    }
+
+    window.setFormat = function(fmt){
+      currentFormat = fmt;
+      isViewAll = false;
+      updateUI();
+    };
+
+    window.toggleViewAll = function(){
+      isViewAll = !isViewAll;
+      updateUI();
+    };
+
+    function updateUI(){
+      const grid = document.getElementById('postersGrid');
+      const textGroup = document.getElementById('textFieldsGroup');
+      const btnViewAll = document.getElementById('btnViewAllSwitch');
+      const btns = $all('.format-btn:not(#btnViewAllSwitch)');
+
+      btns.forEach(b => b.classList.remove('active'));
+      if(!isViewAll) {
+        if(currentFormat==='reels') $('#btnStory').classList.add('active');
+        if(currentFormat==='feed') $('#btnFeed').classList.add('active');
+        if(currentFormat==='banner-site') $('#btnBanner').classList.add('active');
+        if(currentFormat==='banner-global') $('#btnBannerOnly').classList.add('active');
+      }
+      btnViewAll.classList.toggle('active', isViewAll);
+
+      grid.className = isViewAll ? 'posters-grid mode-all' : 'posters-grid mode-single';
+
+      $all('.poster-wrapper').forEach(w => {
+        if(isViewAll) w.classList.add('active');
+        else {
+          w.classList.remove('active');
+          if(w.dataset.type === currentFormat) w.classList.add('active');
+        }
+      });
+
+      const isBanner = currentFormat.includes('banner');
+      if(textGroup) textGroup.style.display = (isBanner && !isViewAll) ? 'none' : 'block';
+
+      setTimeout(() => {
+        if(isViewAll) setScale(0.25);
+        else window.updateAutoScale();
+      }, 50);
+    }
+
+    function bindInputToClass(inputId, targetClass, isHTML=false){
+      const el = document.getElementById(inputId);
+      if(!el) return;
+      const update = () => {
+        const val = isHTML ? el.innerHTML : el.value;
+        $all('.' + targetClass).forEach(target => {
+          if(isHTML) target.innerHTML = styleRegSymbol(val);
+          else target.textContent = val;
+        });
+        saveDraft(); // Auto-save
+      };
+      el.addEventListener('input', update);
+      // Init run handled by loadDraft or manual
+    }
+
+    function bindColor(inputId, cssVar){
+      const el = document.getElementById(inputId);
+      const update = () => {
+        document.documentElement.style.setProperty(cssVar, el.value);
+        saveDraft();
+      };
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
+    }
+
+    function bindImage(inputId, targetClass, isBg=false){
+      const el = document.getElementById(inputId);
+      el.addEventListener('change', () => {
+        if(el.files[0]){
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            $all('.'+targetClass).forEach(img => {
+              if(isBg) img.style.backgroundImage = `url(${e.target.result})`;
+              else {
+                img.src = e.target.result;
+                img.style.display = 'block';
+                if(img.nextElementSibling) img.nextElementSibling.style.display='none';
+                const slot = img.closest('.speakerSlot');
+                if(slot){ slot.classList.add('hasImage'); slot.style.display = 'block'; }
+              }
+            });
+          };
+          reader.readAsDataURL(el.files[0]);
+        }
+      });
+    }
+
+    // Drag and Drop Logic
+    function enableDragDrop(){
+      const inputs = $all('input[type="file"]');
+      inputs.forEach(input => {
+        const field = input.closest('.field');
+        if(!field) return;
+        
+        field.addEventListener('dragover', (e) => { e.preventDefault(); field.classList.add('drag-active'); });
+        field.addEventListener('dragleave', (e) => { field.classList.remove('drag-active'); });
+        field.addEventListener('drop', (e) => {
+          e.preventDefault(); field.classList.remove('drag-active');
+          if(e.dataTransfer.files && e.dataTransfer.files.length > 0){
+            input.files = e.dataTransfer.files;
+            input.dispatchEvent(new Event('change'));
+          }
+        });
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadDraft(); // Restore data
+
+      const headerPicker = $('#headerPicker');
+      const headerHex = $('#headerHex');
+      const bgHex = $('#bgHex');
+
+      const setHeader = (v) => { 
+        document.documentElement.style.setProperty('--header-color', v); 
+        headerPicker.value=v; headerHex.value=v; saveDraft(); 
+      };
+      const setBg = (v) => { 
+        document.documentElement.style.setProperty('--bg-color', v); 
+        bgHex.value=v; saveDraft(); 
+      };
+
+      headerPicker.oninput = (e) => setHeader(e.target.value);
+      $('#applyHeader').onclick = () => setHeader(headerHex.value);
+      $('#applyBg').onclick = () => setBg(bgHex.value);
+
+      bindInputToClass('eventNameInput', 'eventName', true);
+      bindInputToClass('middleTextInput', 'middleTitle', true);
+
+      bindImage('bgFile', 'bgImage', true);
+      bindImage('bannerFile', 'bannerImage', true);
+      bindImage('speakerFile1', 'speakerImg1');
+      bindImage('speakerFile2', 'speakerImg2');
+
+      // DEFAULT BG INIT
+      $all('.bgImage').forEach(d => d.style.backgroundImage = "url('bg-cinza.jpg')");
+
+      ['r1','r2','a1','a2','a3','a4','a5'].forEach(id => {
+        const input = document.querySelector(`.logoInput[data-target="${id}"]`);
+        input.addEventListener('change', () => {
+          if(input.files[0]){
+            const r = new FileReader();
+            r.onload = (e) => {
+              $all(`.logo-${id}`).forEach(img => {
+                img.src = e.target.result; img.style.display='block';
+                if(img.nextElementSibling) img.nextElementSibling.style.display='none';
+              });
+            };
+            r.readAsDataURL(input.files[0]);
+          }
+        });
+      });
+
+      $('#clearBanner').onclick = () => { 
+        $all('.bannerImage').forEach(d => { d.style.backgroundImage='none'; d.nextElementSibling.style.display='flex'; }); 
+        $('#bannerFile').value=''; 
+      };
+      $('#clearBg').onclick = () => { 
+        $all('.bgImage').forEach(d => d.style.backgroundImage='none'); 
+        $('#bgFile').value=''; 
+      };
+      $('#clearSpeaker1').onclick = () => {
+        $all('.speakerImg1').forEach(img => { img.src=''; img.style.display='none'; img.nextElementSibling.style.display='flex'; img.closest('.speakerSlot').classList.remove('hasImage'); });
+        $('#speakerFile1').value='';
+      };
+      $('#clearSpeaker2').onclick = () => {
+        $all('.speakerImg2').forEach(img => { img.src=''; img.style.display='none'; img.nextElementSibling.style.display='flex'; img.closest('.speakerSlot').classList.remove('hasImage'); img.closest('.speakerSlot').style.display='none';});
+        $('#speakerFile2').value='';
+      };
+      $('#resetAll').onclick = () => { localStorage.removeItem('noticiaProDraft'); location.reload(); };
+
+      window.updateAutoScale = () => {
+        if(isViewAll) return;
+        const wBase = currentFormat.includes('banner') ? 1860 : 1080;
+        const hBase = currentFormat.includes('banner') ? 830 : (currentFormat==='feed'?1350:1920);
+        const maxW = Math.max(400, window.innerWidth - 460);
+        const maxH = window.innerHeight - 100;
+        const s = Math.min(maxW / wBase, maxH / hBase);
+        setScale(Math.max(0.3, Math.min(0.85, s)));
+      };
+      window.addEventListener('resize', () => { if(!isViewAll) window.updateAutoScale(); });
+      window.updateAutoScale();
+      enableDragDrop();
+    });
+
+    function setScale(v){
+      v = Math.max(0.1, Math.min(1.5, v));
+      document.documentElement.style.setProperty('--scale', String(v));
+      $('#zoomLabel').textContent = Math.round(v*100) + '%';
+    }
+    $('#zoomIn').onclick = () => setScale(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--scale')) + 0.05);
+    $('#zoomOut').onclick = () => setScale(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--scale')) - 0.05);
+    $('#zoomReset').onclick = () => window.updateAutoScale();
+
+    window.formatText = (cmd) => document.execCommand(cmd, false, null);
+    function styleRegSymbol(html){ return html.replace(/®/g, '<span class="reg">®</span>'); }
+
+    // Smart Filename
+    function getSmartName(suffix){
+      const raw = document.getElementById('eventNameInput').innerText;
+      const clean = raw.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').substring(0, 30);
+      return (clean || 'Poster') + '_' + suffix;
+    }
+
+    // === EXPORT LOGIC ===
+    function downloadPoster(sourceElement, w, h, filename) {
+      const container = document.createElement('div');
+      container.style.position = 'fixed'; container.style.top = '-10000px'; container.style.left = '-10000px';
+      container.style.width = w + 'px'; container.style.height = h + 'px'; container.style.overflow = 'hidden';
+      document.body.appendChild(container);
+
+      const clone = sourceElement.cloneNode(true);
+      clone.style.transform = 'none'; clone.style.width = '100%'; clone.style.height = '100%';
+      clone.style.margin = '0'; clone.style.boxShadow = 'none';
+      
+      // FIX: Remover Banner Placeholder
+      const bph = clone.querySelector('.bannerPlaceholder');
+      if(bph) bph.style.display = 'none';
+
+      const logoBar = clone.querySelector('.logosBar');
+      if(logoBar) {
+        logoBar.style.boxShadow = 'none'; logoBar.style.border = 'none';
+        logoBar.querySelectorAll('.tag').forEach(t => t.style.color = '#000000');
+      }
+      clone.querySelectorAll('.speakerSlot, .logoSlot').forEach(s => {
+        s.style.border='none'; s.style.outline='none'; s.style.boxShadow='none'; s.style.background='transparent';
+      });
+      clone.querySelectorAll('.speakerPlaceholder, .logoSlot span').forEach(ph => {
+         if(ph.tagName==='SPAN' || (ph.parentNode && ph.parentNode.classList.contains('hasImage'))) ph.style.display='none';
+      });
+      clone.querySelectorAll('.speakerSlot img, .logoSlot img').forEach(img => {
+         if(img.src && img.style.display!=='none' && !img.classList.contains('panel-logo')){
+           const fit = img.closest('.logoSlot') ? 'contain' : 'cover';
+           img.parentNode.style.background = `transparent url("${img.src}") center center / ${fit} no-repeat`;
+           img.style.display='none';
+         }
+      });
+
+      container.appendChild(clone);
+
+      return html2canvas(clone, {
+        backgroundColor: null, scale: 1, width: w, height: h, useCORS: true, allowTaint: true, logging: false
+      }).then(canvas => {
+        document.body.removeChild(container);
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/jpeg', 0.95);
+        a.download = filename;
+        document.body.appendChild(a); a.click(); a.remove();
+        return true; // For blob handling in batch
+      });
+    }
+
+    // Helper para retornar canvas (para o ZIP)
+    function getCanvasFromPoster(sourceElement, w, h) {
+      // Mesma lógica de clonagem, mas retorna o canvas
+      const container = document.createElement('div');
+      container.style.position = 'fixed'; container.style.top = '-10000px'; container.style.left = '-10000px';
+      container.style.width = w + 'px'; container.style.height = h + 'px'; container.style.overflow = 'hidden';
+      document.body.appendChild(container);
+
+      const clone = sourceElement.cloneNode(true);
+      clone.style.transform = 'none'; clone.style.width = '100%'; clone.style.height = '100%'; clone.style.margin = '0'; clone.style.boxShadow = 'none';
+      
+      const bph = clone.querySelector('.bannerPlaceholder'); if(bph) bph.style.display = 'none';
+
+      const logoBar = clone.querySelector('.logosBar');
+      if(logoBar) { logoBar.style.boxShadow='none'; logoBar.style.border='none'; logoBar.querySelectorAll('.tag').forEach(t => t.style.color='#000000'); }
+      clone.querySelectorAll('.speakerSlot, .logoSlot').forEach(s => { s.style.border='none'; s.style.outline='none'; s.style.boxShadow='none'; s.style.background='transparent'; });
+      clone.querySelectorAll('.speakerPlaceholder, .logoSlot span').forEach(ph => { if(ph.tagName==='SPAN'||(ph.parentNode&&ph.parentNode.classList.contains('hasImage'))) ph.style.display='none'; });
+      clone.querySelectorAll('.speakerSlot img, .logoSlot img').forEach(img => {
+         if(img.src && img.style.display!=='none'){
+           const fit = img.closest('.logoSlot')?'contain':'cover';
+           img.parentNode.style.background=`transparent url("${img.src}") center center / ${fit} no-repeat`;
+           img.style.display='none';
+         }
+      });
+      container.appendChild(clone);
+      return html2canvas(clone, { scale: 1, width: w, height: h, useCORS:true, allowTaint:true }).then(canvas => {
+        document.body.removeChild(container);
+        return canvas;
+      });
+    }
+
+    const formatDims = {
+      'reels': { w: 1080, h: 1920 },
+      'feed': { w: 1080, h: 1350 },
+      'banner-site': { w: 1860, h: 830 },
+      'banner-global': { w: 1860, h: 830 }
+    };
+
+    $('#saveJpg').onclick = async function() {
+      startLoading("GERANDO JPG...");
+      const wrapper = document.querySelector(`.poster-wrapper[data-type="${currentFormat}"]`);
+      const poster = wrapper.querySelector('.poster');
+      const dims = formatDims[currentFormat];
+      const fname = getSmartName(currentFormat + '.jpg');
+
+      try {
+        await downloadPoster(poster, dims.w, dims.h, fname);
+      } catch(e) { console.error(e); alert('Erro.'); }
+      finally { stopLoading(); }
+    };
+
+    $('#btnDownloadAll').onclick = async function() {
+      if(!window.JSZip){ alert('Erro: JSZip.'); return; }
+      startLoading("GERANDO 4 IMAGENS...");
+      const zip = new JSZip();
+      const list = ['reels', 'feed', 'banner-site', 'banner-global'];
+
+      try {
+        for(const fmt of list) {
+          const wrapper = document.querySelector(`.poster-wrapper[data-type="${fmt}"]`);
+          const poster = wrapper.querySelector('.poster');
+          const dims = formatDims[fmt];
+          
+          const canvas = await getCanvasFromPoster(poster, dims.w, dims.h);
+          const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.95));
+          zip.file(getSmartName(fmt + '.jpg'), blob);
+        }
+        const content = await zip.generateAsync({type:"blob"});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(content);
+        a.download = getSmartName("Pack.zip");
+        document.body.appendChild(a); a.click(); a.remove();
+      } catch(e) { console.error(e); alert('Erro no download em lote.'); }
+      finally { stopLoading(); }
+    };
+
+  </script>
+</body>
+</html>
