@@ -152,6 +152,22 @@
       padding: 4px 8px; border-radius: 6px; margin-right: 10px; cursor: pointer;
     }
 
+    /* CONTROLE DE ZOOM (Apenas Banner) */
+    .zoom-control-panel {
+      display: flex; align-items: center; gap: 10px; margin-top: 10px;
+      background: rgba(0,0,0,0.3); padding: 8px; border-radius: 8px;
+    }
+    .zoom-control-panel span { font-size: 10px; color: #aaa; white-space: nowrap; }
+    input[type="range"] {
+      -webkit-appearance: none; width: 100%; height: 4px; background: rgba(255,255,255,0.2);
+      border-radius: 2px; outline: none; padding: 0; border: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+      background: #7b2cbf; cursor: pointer; transition: background .15s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { background: #9d4edd; }
+
     .rich-input {
       width: 100%;
       min-height: 90px;
@@ -176,6 +192,21 @@
     }
     .rich-input b, .rich-input strong { font-weight: 700; color: #fff; }
     .rich-input i, .rich-input em { font-style: italic; color: #fff; }
+    
+    /* CORREÇÃO DO SÍMBOLO REGISTRADO */
+    .reg { 
+      font-size: 0.66em; 
+      vertical-align: 0.3em; /* Ajuste fino de altura */
+      margin-left: 1px;
+      display: inline-block;
+    }
+    .rich-input .reg { color: rgba(255,255,255,0.9); } 
+
+    /* PREVENÇÃO DE ESTILOS INLINE INDESEJADOS NOS INPUTS */
+    #eventNameInput span:not(.reg), #middleTextInput span:not(.reg) {
+      font-size: inherit !important;
+      line-height: inherit !important;
+    }
 
     .hint{ font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 8px; line-height:1.4; }
 
@@ -197,7 +228,6 @@
     .btn:active{ transform: translateY(1px); box-shadow: none; }
 
     /* --- BOTÕES DE AÇÃO ESPECIAIS (ROXO ESCURO) --- */
-    /* Download All, Save JPG, Save Project, Load Project */
     #btnDownloadAll, #saveJpg, #btnSaveProject, #btnLoadProject {
       background: #240046; /* Roxo Escuro Sólido */
       border: 1px solid rgba(255, 255, 255, 0.3); /* Borda Clara visível */
@@ -334,14 +364,19 @@
     }
     .poster .eventName b { font-weight: 700; }
     .poster .eventName i { font-style: italic; }
-    /* AQUI ESTÁ O AJUSTE PARA O ® */
-    .poster .reg { font-size: 0.5em; vertical-align: super; }
-
+    
     .poster .banner { position: relative; width: 100%; height: 672px; background: rgba(0,0,0,.08); z-index: 2; overflow:visible; }
     .poster .bannerClip { position:absolute; inset:0; overflow:hidden; z-index:1; }
-    .poster .banner::after { content:""; position:absolute; left:0; right:0; bottom:0; height: 28px; background: var(--header-color); z-index:4; }
-    .poster .bannerImage { position:absolute; inset:0; background-size: cover; background-position: center; z-index: 1; }
-    .poster .bannerPlaceholder { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color: rgba(255,255,255,.9); font-weight:900; background: rgba(0,0,0,.2); z-index:2; }
+    .poster .banner::after { content:""; position:absolute; left:0; right:0; bottom:0; height: 28px; background: var(--header-color); z-index:4; pointer-events:none; }
+    
+    /* BANNER IMAGE: Interactive Cursor */
+    .poster .bannerImage { 
+        position:absolute; inset:0; background-size: cover; background-position: center; z-index: 1; width:100%; height:100%;
+        cursor: grab; transform-origin: center center; will-change: transform;
+    }
+    .poster .bannerImage:active { cursor: grabbing; }
+
+    .poster .bannerPlaceholder { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color: rgba(255,255,255,.9); font-weight:900; background: rgba(0,0,0,.2); z-index:2; pointer-events:none; }
 
     .poster .content { position: relative; padding: 92px 90px; z-index: 2; text-align: center; }
     .poster .title { margin: 0; color:#1b1b1b; font-size: 46px; font-weight: 400; letter-spacing: .01em; line-height: 1.2; }
@@ -351,8 +386,10 @@
     .poster .speakersWrap { position:absolute; left: 64px; bottom: -58px; display:flex; align-items: flex-end; gap: 14px; z-index: 999; }
     .poster .speakerSlot { width: 224px; height: 271px; border-radius: 18px; border: 2px dashed rgba(255,255,255,.55); position: relative; overflow: hidden; }
     .poster .speakerSlot.hasImage { border: none; }
+    /* Speaker IMG: Default Object Fit (No Drag) */
     .poster .speakerSlot img { width:100%; height:100%; object-fit: cover; display:none; }
-    .poster .speakerPlaceholder { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; font-weight:900; font-size:12px; background: rgba(0,0,0,.12); color:#fff; }
+    
+    .poster .speakerPlaceholder { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; font-weight:900; font-size:12px; background: rgba(0,0,0,.12); color:#fff; pointer-events:none; }
 
     .poster .logosBar { 
       position: absolute; left: 50%; bottom: var(--ft-btm); transform: translateX(-50%); 
@@ -363,7 +400,6 @@
     .poster .logosBar .tag { font-size: 12px; font-weight: 800; color:#000; margin-right: 4px; }
     .poster .logos { display:flex; gap: 10px; }
     
-    /* CORREÇÃO DO LOGO OVERFLOW */
     .poster .logoSlot { width: 88px; height: 50px; border-radius: 8px; border: 1px dashed rgba(0,0,0,.25); display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,.02); position:relative; }
     .poster .logoSlot img { width:100%; height:100%; object-fit: contain; display:none; }
     .poster .logoSlot span { font-size: 10px; color: rgba(0,0,0,.5); font-weight: 800; }
@@ -436,6 +472,10 @@
       <div class="field">
         <label>Imagem do Banner</label>
         <input id="bannerFile" type="file" accept="image/*" />
+        <div class="zoom-control-panel">
+          <span>Zoom:</span>
+          <input type="range" id="bannerZoom" min="0.5" max="3" step="0.1" value="1">
+        </div>
         <button class="btn" id="clearBanner" style="margin-top:10px;">Remover Imagem</button>
       </div>
 
@@ -546,8 +586,8 @@
         <div class="bannerPlaceholder">IMAGEM DO BANNER</div>
       </div>
       <div class="speakersWrap">
-        <div class="speakerSlot speakerSlot1"><img class="speakerImg1" /><div class="speakerPlaceholder">SPEAKER 1</div></div>
-        <div class="speakerSlot speakerSlot2" style="display:none;"><img class="speakerImg2" /><div class="speakerPlaceholder">SPEAKER 2</div></div>
+        <div class="speakerSlot speakerSlot1"><img class="speakerImg1" draggable="false"/><div class="speakerPlaceholder">SPEAKER 1</div></div>
+        <div class="speakerSlot speakerSlot2" style="display:none;"><img class="speakerImg2" draggable="false"/><div class="speakerPlaceholder">SPEAKER 2</div></div>
       </div>
     </section>
     <section class="content">
@@ -588,6 +628,69 @@
     let currentFormat = 'reels';
     let isViewAll = false;
 
+    // === STATE DE IMAGENS (Apenas Banner tem state agora) ===
+    const imgState = {
+      banner: { x:0, y:0, scale:1 }
+    };
+
+    function updateImageTransform(type, targetClass) {
+      if(!imgState[type]) return;
+      const s = imgState[type];
+      const transform = `translate(${s.x}px, ${s.y}px) scale(${s.scale})`;
+      $all('.' + targetClass).forEach(el => el.style.transform = transform);
+    }
+
+    // === LÓGICA DE PAN (ARRASTAR) - APENAS BANNER ===
+    function initPanZoom(triggerClass, stateKey) {
+      const elements = $all('.' + triggerClass);
+      
+      // Slider Listener
+      const sliderId = 'bannerZoom';
+      const slider = document.getElementById(sliderId);
+      if(slider){
+        slider.addEventListener('input', (e) => {
+          imgState[stateKey].scale = parseFloat(e.target.value);
+          updateImageTransform(stateKey, triggerClass);
+        });
+      }
+
+      elements.forEach(el => {
+        let isDragging = false;
+        let startX, startY, initialImgX, initialImgY;
+
+        el.addEventListener('mousedown', (e) => {
+          e.preventDefault(); 
+          isDragging = true;
+          startX = e.clientX;
+          startY = e.clientY;
+          initialImgX = imgState[stateKey].x;
+          initialImgY = imgState[stateKey].y;
+          el.style.cursor = 'grabbing';
+        });
+
+        window.addEventListener('mousemove', (e) => {
+          if (!isDragging) return;
+          e.preventDefault();
+          
+          const currentGlobalScale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--scale')) || 1;
+          const dx = (e.clientX - startX) / currentGlobalScale;
+          const dy = (e.clientY - startY) / currentGlobalScale;
+
+          imgState[stateKey].x = initialImgX + dx;
+          imgState[stateKey].y = initialImgY + dy;
+
+          updateImageTransform(stateKey, triggerClass);
+        });
+
+        window.addEventListener('mouseup', () => {
+          if(isDragging){
+            isDragging = false;
+            el.style.cursor = 'grab';
+          }
+        });
+      });
+    }
+
     // --- Loading Overlay Control ---
     function startLoading(msg){
       document.getElementById('loadingText').innerText = msg || "PROCESSANDO...";
@@ -599,25 +702,21 @@
 
     // --- SAVE / LOAD PROJECT ---
     function saveProjectFile(){
-      // Coleta dados
       const bannerImg = document.querySelector('.bannerImage').style.backgroundImage;
       const bgImg = document.querySelector('.bgImage').style.backgroundImage;
-      
-      const cleanUrl = (str) => {
-        if(!str || str==='none') return '';
-        return str.replace(/^url\(['"]?/, '').replace(/['"]?\)$/, '');
-      };
+      const cleanUrl = (str) => (!str || str==='none') ? '' : str.replace(/^url\(['"]?/, '').replace(/['"]?\)$/, '');
 
       const projectData = {
         eventName: $('#eventNameInput').innerHTML,
         middleText: $('#middleTextInput').innerHTML,
         headerColor: $('#headerHex').value,
         bgColor: $('#bgHex').value,
+        imgState: imgState, // Salva posições do banner
         images: {
           banner: cleanUrl(bannerImg),
           background: cleanUrl(bgImg),
-          speaker1: $('.speakerImg1').src,
-          speaker2: $('.speakerImg2').src
+          speaker1: $all('.speakerImg1')[0].src,
+          speaker2: $all('.speakerImg2')[0].src
         },
         logos: {}
       };
@@ -652,6 +751,13 @@
           if(data.bgColor) {
             $('#bgHex').value = data.bgColor;
             document.documentElement.style.setProperty('--bg-color', data.bgColor);
+          }
+
+          // Restore Banner State
+          if(data.imgState && data.imgState.banner) {
+            imgState.banner = data.imgState.banner;
+            $('#bannerZoom').value = imgState.banner.scale;
+            updateImageTransform('banner', 'bannerImage');
           }
 
           if(data.images){
@@ -694,7 +800,7 @@
       reader.readAsText(file);
     }
 
-    // --- Auto-Save (LocalStorage) ---
+    // --- Auto-Save ---
     function saveDraft(){
       const data = {
         headerColor: $('#headerHex').value,
@@ -802,7 +908,15 @@
           const reader = new FileReader();
           reader.onload = (e) => {
             $all('.'+targetClass).forEach(img => {
-              if(isBg) img.style.backgroundImage = `url(${e.target.result})`;
+              if(isBg) {
+                // Se for banner, reseta posição
+                if(targetClass === 'bannerImage'){
+                   imgState.banner = {x:0, y:0, scale:1};
+                   $('#bannerZoom').value = 1;
+                   updateImageTransform('banner', 'bannerImage');
+                }
+                img.style.backgroundImage = `url(${e.target.result})`;
+              }
               else {
                 img.src = e.target.result;
                 img.style.display = 'block';
@@ -891,8 +1005,9 @@
       });
 
       $('#clearBanner').onclick = () => { 
-        $all('.bannerImage').forEach(d => { d.style.backgroundImage='none'; d.nextElementSibling.style.display='flex'; }); 
+        $all('.bannerImage').forEach(d => { d.style.backgroundImage='none'; d.nextElementSibling.style.display='flex'; d.style.transform='none'; }); 
         $('#bannerFile').value=''; 
+        imgState.banner = {x:0, y:0, scale:1}; $('#bannerZoom').value=1;
       };
       $('#clearBg').onclick = () => { 
         $all('.bgImage').forEach(d => d.style.backgroundImage='none'); 
@@ -903,10 +1018,21 @@
         $('#speakerFile1').value='';
       };
       $('#clearSpeaker2').onclick = () => {
-        $all('.speakerImg2').forEach(img => { img.src=''; img.style.display='none'; img.nextElementSibling.style.display='flex'; img.closest('.speakerSlot').classList.remove('hasImage'); img.closest('.speakerSlot').style.display='none';});
+        $all('.speakerImg2').forEach(img => { img.src=''; img.style.display='none'; img.nextElementSibling.style.display='flex'; img.closest('.speakerSlot').classList.remove('hasImage'); img.closest('.speakerSlot').style.display='none'; });
         $('#speakerFile2').value='';
       };
       $('#resetAll').onclick = () => { localStorage.removeItem('noticiaProDraft'); location.reload(); };
+
+      // INIT WITH FORMATTED ® IN INPUT
+      (function applyInitialFormatting(){
+        const evInput = $('#eventNameInput');
+        if(evInput.innerText.includes('®')) {
+           evInput.innerHTML = styleRegSymbol(evInput.innerText);
+        }
+      })();
+
+      // === INITIALIZE PAN ZOOM (Only Banner) ===
+      initPanZoom('bannerImage', 'banner');
 
       window.updateAutoScale = () => {
         if(isViewAll) return;
@@ -932,7 +1058,16 @@
     $('#zoomReset').onclick = () => window.updateAutoScale();
 
     window.formatText = (cmd) => document.execCommand(cmd, false, null);
-    function styleRegSymbol(html){ return html.replace(/®/g, '<span class="reg">®</span>'); }
+    
+    // CORREÇÃO DO BUG "RECURSIVO": Remove qualquer span sujo antes de aplicar o novo
+    function styleRegSymbol(html){
+      let clean = html;
+      // Loop remove spans aninhados ou sujos em volta do ®
+      while(/<span[^>]*>\s*®\s*<\/span>/i.test(clean)){
+        clean = clean.replace(/<span[^>]*>\s*®\s*<\/span>/gi, '®');
+      }
+      return clean.replace(/®/g, '<span class="reg">®</span>');
+    }
 
     function getSmartName(suffix){
       const raw = document.getElementById('eventNameInput').innerText;
@@ -966,6 +1101,7 @@
       clone.querySelectorAll('.speakerPlaceholder, .logoSlot span').forEach(ph => {
          if(ph.tagName==='SPAN' || (ph.parentNode && ph.parentNode.classList.contains('hasImage'))) ph.style.display='none';
       });
+      // Conversão Img -> Background (SOMENTE PARA LOGOS E SPEAKERS, NÃO PARA O BANNER)
       clone.querySelectorAll('.speakerSlot img, .logoSlot img').forEach(img => {
          if(img.src && img.style.display!=='none' && !img.classList.contains('panel-logo')){
            const fit = img.closest('.logoSlot') ? 'contain' : 'cover';
@@ -990,7 +1126,6 @@
 
     // Helper para retornar canvas (para o ZIP)
     function getCanvasFromPoster(sourceElement, w, h) {
-      // Mesma lógica de clonagem, mas retorna o canvas
       const container = document.createElement('div');
       container.style.position = 'fixed'; container.style.top = '-10000px'; container.style.left = '-10000px';
       container.style.width = w + 'px'; container.style.height = h + 'px'; container.style.overflow = 'hidden';
@@ -1012,6 +1147,7 @@
            img.style.display='none';
          }
       });
+      
       container.appendChild(clone);
       return html2canvas(clone, { scale: 1, width: w, height: h, useCORS:true, allowTaint:true }).then(canvas => {
         document.body.removeChild(container);
