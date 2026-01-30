@@ -70,15 +70,37 @@
       overflow-x: hidden;
     }
 
-    .panel-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    /* --- HEADER DO PAINEL (MODIFICADO) --- */
+    .panel-header { 
+      display: flex; 
+      flex-direction: column; /* Empilha verticalmente */
+      align-items: center;    /* Centraliza horizontalmente */
+      justify-content: center;
+      gap: 10px; 
+      margin-bottom: 24px; 
+      padding-bottom: 16px; 
+      border-bottom: 1px solid rgba(255,255,255,0.1); 
+    }
     
     .panel-logo {
-      width: auto; height: 40px; 
+      width: 70px; /* Logo Menor */
+      height: auto; 
       object-fit: contain;
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
     }
     
-    .panel h2{ margin: 0; font-size: 18px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.95; text-shadow: 0 2px 4px rgba(0,0,0,0.5); line-height: 1.1; }
+    .panel h2{ 
+      margin: 0; 
+      font-size: 14px; /* Fonte ajustada */
+      font-weight: 800; 
+      color: #fff; 
+      text-transform: uppercase; 
+      letter-spacing: 0.1em; /* Espaçamento mais elegante */
+      opacity: 0.9; 
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5); 
+      line-height: 1.1; 
+      white-space: nowrap; /* Garante linha única */
+    }
 
     .field{ margin: 16px 0; padding: 14px; border-radius: 16px; background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.2s; }
     .field:hover{ background: rgba(0, 0, 0, 0.4); border-color: rgba(255, 255, 255, 0.1); }
@@ -198,7 +220,7 @@
     .poster .header { position: relative; width: 100%; height: var(--header-h); background: var(--header-color); padding: var(--header-pad); display:flex; z-index: 3; }
     
     .poster .eventName { 
-        margin-top: var(--evt-margin); margin-left: 15px; /* AJUSTE SOLICITADO */
+        margin-top: var(--evt-margin); margin-left: 15px;
         font-size: 48px; letter-spacing: .06em; font-weight: 400; text-transform: uppercase; color:#fff; line-height:1.1; 
         overflow-wrap: break-word; word-wrap: break-word; word-break: break-word;
     }
@@ -213,7 +235,7 @@
     .poster .content { position: relative; padding: 92px 90px; z-index: 2; text-align: center; }
     
     .poster .title { 
-        margin: 40px 0 0 0; /* AJUSTE SOLICITADO */
+        margin: 40px 0 0 0;
         color:#1b1b1b; font-size: 46px; font-weight: 400; letter-spacing: .01em; line-height: 1.2; 
         overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; 
     }
@@ -1214,14 +1236,8 @@
 
       try {
         for (const lang of langsToDownload) {
-            // Check if lang is active or force it if requested explicitly?
-            // If the user clicks PACK EN but never activated EN, it might be empty or default.
-            // Let's assume if they click, they want it generated even if it's default text.
-            
-            // Manual switch logic for export
             currentLang = lang;
             updateStaticLabels(lang);
-            // DIRECT DOM UPDATE
             $all('.eventName').forEach(el => el.innerHTML = styleRegSymbol(langData[lang].event));
             $all('.middleTitle').forEach(el => el.innerHTML = styleRegSymbol(langData[lang].middle));
             
@@ -1244,7 +1260,6 @@
         
       } catch(e) { console.error(e); showToast('ERRO NO DOWNLOAD EM LOTE.', 'error'); }
       finally { 
-        // Restore View
         switchLang(originalLang);
         stopLoading(); 
       }
