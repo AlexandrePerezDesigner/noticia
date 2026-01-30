@@ -70,37 +70,15 @@
       overflow-x: hidden;
     }
 
-    /* --- HEADER DO PAINEL (MODIFICADO) --- */
-    .panel-header { 
-      display: flex; 
-      flex-direction: column; /* Empilha verticalmente */
-      align-items: center;    /* Centraliza horizontalmente */
-      justify-content: center;
-      gap: 10px; 
-      margin-bottom: 24px; 
-      padding-bottom: 16px; 
-      border-bottom: 1px solid rgba(255,255,255,0.1); 
-    }
+    .panel-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
     
     .panel-logo {
-      width: 70px; /* Logo Menor */
-      height: auto; 
+      width: auto; height: 40px; 
       object-fit: contain;
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
     }
     
-    .panel h2{ 
-      margin: 0; 
-      font-size: 14px; /* Fonte ajustada */
-      font-weight: 800; 
-      color: #fff; 
-      text-transform: uppercase; 
-      letter-spacing: 0.1em; /* Espaçamento mais elegante */
-      opacity: 0.9; 
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5); 
-      line-height: 1.1; 
-      white-space: nowrap; /* Garante linha única */
-    }
+    .panel h2{ margin: 0; font-size: 18px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.95; text-shadow: 0 2px 4px rgba(0,0,0,0.5); line-height: 1.1; }
 
     .field{ margin: 16px 0; padding: 14px; border-radius: 16px; background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.2s; }
     .field:hover{ background: rgba(0, 0, 0, 0.4); border-color: rgba(255, 255, 255, 0.1); }
@@ -168,6 +146,17 @@
     .lang-btn:hover .flag-icon { filter: grayscale(0%); opacity: 0.8; }
     .lang-btn.active { background: #5213b9; color: #fff; border-color: rgba(255,255,255,0.3); box-shadow: 0 0 10px rgba(82, 19, 185, 0.4); }
     .lang-btn.active .flag-icon { filter: grayscale(0%); opacity: 1; }
+
+    /* PRESET BUTTONS */
+    .preset-container { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .preset-btn {
+      flex: 1; min-width: 80px; padding: 8px; border-radius: 8px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      color: #fff; font-size: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+    }
+    .preset-btn:hover { background: rgba(255,255,255,0.15); transform: translateY(-1px); }
+    .preset-btn .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; box-shadow: 0 0 4px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.3); }
 
     /* LOGO COUNT SWITCHER */
     .logo-count-switcher { display: flex; gap: 4px; margin-bottom: 8px; }
@@ -345,6 +334,21 @@
            <button class="btn btn-sm" id="btnFillBanner" type="button">PREENCHER</button>
         </div>
         <button class="btn" id="clearBanner" style="margin-top:10px;">Remover Imagem</button>
+      </div>
+
+      <div class="field">
+        <label>Eventos Rápidos</label>
+        <div class="preset-container">
+            <button class="preset-btn" onclick="applyEventPreset('NEWS <b>ASH®2025</b>', '#e92323')">
+                <span class="dot" style="background:#e92323"></span>ASH
+            </button>
+            <button class="preset-btn" onclick="applyEventPreset('<b>ONCO</b>NEWS', '#144c6f')">
+                <span class="dot" style="background:#144c6f"></span>ONCO
+            </button>
+            <button class="preset-btn" onclick="applyEventPreset('<b>TRIBE</b>NEWS', '#5213b9')">
+                <span class="dot" style="background:#5213b9"></span>TRIBE
+            </button>
+        </div>
       </div>
 
       <div id="textFieldsGroup">
@@ -533,6 +537,27 @@
     let currentFormat = 'reels';
     let isViewAll = false;
     let apoioCount = 5;
+
+    // === PRESET FUNCTION ===
+    window.applyEventPreset = function(html, color) {
+        // 1. Update Color
+        document.documentElement.style.setProperty('--header-color', color);
+        $('#headerHex').value = color;
+        $('#headerPicker').value = color;
+
+        // 2. Update Text (Formatted)
+        const formatted = styleRegSymbol(html);
+        $('#eventNameInput').innerHTML = formatted;
+        
+        // 3. Update DOM
+        $all('.eventName').forEach(el => el.innerHTML = formatted);
+        
+        // 4. Save to Current Lang Data
+        langData[currentLang].event = formatted;
+        
+        saveDraft();
+        showToast('PRESET APLICADO!', 'success');
+    };
 
     window.setApoioCount = function(n) {
         apoioCount = n;
@@ -1026,6 +1051,8 @@
       bindImage('bannerFile', 'bannerImage', true);
       bindImage('speakerFile1', 'speakerImg1');
       bindImage('speakerFile2', 'speakerImg2');
+
+      $all('.bgImage').forEach(d => d.style.backgroundImage = "url('bg-cinza.jpg')");
 
       ['r1','r2','a1','a2','a3','a4','a5'].forEach(id => {
         const input = document.querySelector(`.logoInput[data-target="${id}"]`);
