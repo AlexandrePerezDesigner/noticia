@@ -31,6 +31,10 @@
       --banner-bar-h: 28px;
       --event-font-size: 48px;
       --content-padding: 92px 90px;
+
+      /* VARIÁVEIS DE TIPOGRAFIA (Texto do Meio) */
+      --mid-font-size: 46px;
+      --mid-pos-y: 40px;
     }
 
     *{ box-sizing: border-box; }
@@ -140,7 +144,7 @@
     
     .flag-icon { width: 18px; height: 18px; display: inline-block; background-size: contain; background-repeat: no-repeat; background-position: center; filter: grayscale(100%); opacity: 0.6; transition: all 0.2s; }
     .flag-br { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 720 500'%3E%3Cpath fill='%23009c3b' d='M0 0h720v500H0z'/%3E%3Cpath fill='%23ffdf00' d='m360 43 318 207L360 457 42 250z'/%3E%3Ccircle fill='%23002776' cx='360' cy='250' r='126'/%3E%3Cpath fill='none' stroke='%23fff' stroke-width='9' d='M255 285c19-14 96-41 210-6'/%3E%3C/svg%3E"); }
-    .flag-us { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1235 650'%3E%3Cpath fill='%23b22234' d='M0 0h1235v650H0z'/%3E%3Cpath fill='%23fff' d='M0 50h1235v50H0zm0 100h1235v50H0zm0 100h1235v50H0zm0 100h1235v50H0zm0 100h1235v50H0zm0 100h1235v50H0z'/%3E%3Cpath fill='%233c3b6e' d='M0 0h494v350H0z'/%3E%3C/svg%3E"); }
+    .flag-us { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1235 650'%3E%3Cpath fill='%23b22234' d='M0 0h1235v650H0z'/%3E%3Cpath fill='%23fff' d='M0 50h1235v50H0zm0 100h1235v50H0zm0 100h1235v50H0zm0 100h1235v50H0zm0 100h1235v50H0z'/%3E%3Cpath fill='%233c3b6e' d='M0 0h494v350H0z'/%3E%3C/svg%3E"); }
     .flag-es { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 750 500'%3E%3Cpath fill='%23c60b1e' d='M0 0h750v500H0z'/%3E%3Cpath fill='%23ffc400' d='M0 125h750v250H0z'/%3E%3C/svg%3E"); }
     .lang-btn:hover { background: rgba(255,255,255,0.1); }
     .lang-btn:hover .flag-icon { filter: grayscale(0%); opacity: 0.8; }
@@ -223,9 +227,13 @@
     .poster .bannerPlaceholder { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color: rgba(255,255,255,.9); font-weight:900; background: rgba(0,0,0,.2); z-index:2; pointer-events:none; }
     .poster .content { position: relative; padding: 92px 90px; z-index: 2; text-align: center; }
     
+    /* MODIFICADO: USA VARIÁVEIS PARA TAMANHO E POSIÇÃO */
     .poster .title { 
-        margin: 40px 0 0 0;
-        color:#1b1b1b; font-size: 46px; font-weight: 400; letter-spacing: .01em; line-height: 1.2; 
+        margin-top: var(--mid-pos-y); /* Controlado pelo slider */
+        margin-bottom: 0;
+        color:#1b1b1b; 
+        font-size: var(--mid-font-size); /* Controlado pelo slider */
+        font-weight: 400; letter-spacing: .01em; line-height: 1.2; 
         overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; 
     }
     
@@ -368,6 +376,15 @@
             <button class="toolBtn" data-cmd="italic" onclick="formatText('italic')" title="Itálico">ITÁLICO</button>
           </div>
           <div id="middleTextInput" class="rich-input" contenteditable="true">Texto para inserir notícia.</div>
+          
+          <div class="row" style="margin-top:10px;">
+            <span style="font-size:10px; width:40px">Tam:</span>
+            <input type="range" id="midTextSize" min="20" max="90" step="1" value="46">
+          </div>
+          <div class="row" style="margin-top:5px;">
+            <span style="font-size:10px; width:40px">Pos Y:</span>
+            <input type="range" id="midTextPos" min="0" max="300" step="10" value="40">
+          </div>
         </div>
 
         <div class="field">
@@ -742,6 +759,10 @@
         bgColor: $('#bgHex').value,
         imgState: imgState, 
         apoioCount: apoioCount,
+        typography: { // SAVING TYPOGRAPHY STATE
+            midSize: document.documentElement.style.getPropertyValue('--mid-font-size'),
+            midPos: document.documentElement.style.getPropertyValue('--mid-pos-y')
+        },
         images: {
           banner: cleanUrl(bannerImg),
           background: cleanUrl(bgImg),
@@ -785,6 +806,17 @@
           }
 
           if(data.apoioCount) setApoioCount(data.apoioCount);
+
+          if(data.typography) {
+              if(data.typography.midSize) {
+                  document.documentElement.style.setProperty('--mid-font-size', data.typography.midSize);
+                  $('#midTextSize').value = parseInt(data.typography.midSize);
+              }
+              if(data.typography.midPos) {
+                  document.documentElement.style.setProperty('--mid-pos-y', data.typography.midPos);
+                  $('#midTextPos').value = parseInt(data.typography.midPos);
+              }
+          }
 
           if(data.imgState) {
             if(data.imgState.bannerVert) imgState.bannerVert = data.imgState.bannerVert;
@@ -847,7 +879,12 @@
         activeLanguages: Array.from(activeLanguages),
         headerColor: $('#headerHex').value,
         bgColor: $('#bgHex').value,
-        apoioCount: apoioCount
+        apoioCount: apoioCount,
+        // SAVE TYPOGRAPHY TO DRAFT
+        typography: {
+            midSize: document.documentElement.style.getPropertyValue('--mid-font-size'),
+            midPos: document.documentElement.style.getPropertyValue('--mid-pos-y')
+        }
       };
       localStorage.setItem('noticiaProDraft', JSON.stringify(data));
     }
@@ -866,6 +903,17 @@
           document.documentElement.style.setProperty('--bg-color', d.bgColor);
         }
         if(d.apoioCount) setApoioCount(d.apoioCount);
+        
+        if(d.typography) {
+            if(d.typography.midSize) {
+                document.documentElement.style.setProperty('--mid-font-size', d.typography.midSize);
+                $('#midTextSize').value = parseInt(d.typography.midSize);
+            }
+            if(d.typography.midPos) {
+                document.documentElement.style.setProperty('--mid-pos-y', d.typography.midPos);
+                $('#midTextPos').value = parseInt(d.typography.midPos);
+            }
+        }
         
         if(d.langData) langData = d.langData;
         if(d.activeLanguages) activeLanguages = new Set(d.activeLanguages);
@@ -933,19 +981,22 @@
           else target.textContent = val;
         });
         
-        // FIXED: Sync logic for Event Name vs Middle Text
-        if(targetClass === 'eventName') {
-            // Update ALL languages for Event Name
-            ['pt', 'en', 'es'].forEach(l => langData[l].event = val);
-        } else if(targetClass === 'middleTitle') {
-            // Update only current language for Middle Text
-            langData[currentLang].middle = val;
-        }
-        
+        if(targetClass === 'eventName') langData[currentLang].event = val;
+        if(targetClass === 'middleTitle') langData[currentLang].middle = val;
         saveDraft(); 
       };
       el.addEventListener('input', update);
     }
+    
+    // TYPOGRAPHY CONTROLS
+    $('#midTextSize').addEventListener('input', (e) => {
+        document.documentElement.style.setProperty('--mid-font-size', e.target.value + 'px');
+        saveDraft();
+    });
+    $('#midTextPos').addEventListener('input', (e) => {
+        document.documentElement.style.setProperty('--mid-pos-y', e.target.value + 'px');
+        saveDraft();
+    });
 
     // PREVENT RICH TEXT PASTE
     [document.getElementById('eventNameInput'), document.getElementById('middleTextInput')].forEach(el => {
@@ -1059,7 +1110,7 @@
       bindImage('speakerFile1', 'speakerImg1');
       bindImage('speakerFile2', 'speakerImg2');
 
-      // Default BG (CSS already handles it, but just in case we remove old hardcoded url)
+      // Default BG
       $all('.bgImage').forEach(d => {
          if(!d.style.backgroundImage) d.style.backgroundImage = 'none';
       });
