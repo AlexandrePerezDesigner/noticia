@@ -9,6 +9,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
   <style>
     :root{
       /* === VARIÁVEIS DE FORMATO === */
@@ -42,21 +45,29 @@
     body{
       margin:0;
       font-family: Montserrat, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: radial-gradient(circle at top left, #3a005c, #000000);
+      /* Fundo base roxo escuro */
+      background: radial-gradient(circle at top left, #240046, #10002b, #000000);
       background-attachment: fixed;
       color:#e0e0e0;
       overflow: hidden; 
       min-height: 100vh;
     }
 
-    .app{ display:grid; grid-template-columns: 380px 1fr; gap: 24px; padding: 24px; height: 100vh; overflow: hidden; }
+    /* === BACKGROUND ORBS === */
+    .orbs { position: fixed; inset: 0; pointer-events: none; z-index: 0; filter: blur(60px); opacity: 0.6; overflow: hidden; }
+    .orb { position: absolute; border-radius: 50%; animation: float 10s infinite ease-in-out alternate; }
+    .orb-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(123, 44, 191, 0.4) 0%, transparent 70%); animation-duration: 14s; }
+    .orb-2 { bottom: -20%; right: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, rgba(60, 9, 108, 0.5) 0%, transparent 70%); animation-duration: 18s; }
+    .orb-3 { top: 40%; left: 40%; width: 30vw; height: 30vw; background: radial-gradient(circle, rgba(157, 78, 221, 0.2) 0%, transparent 70%); animation-duration: 22s; }
+    @keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(40px, -20px) scale(1.05); } }
 
-    /* SCROLLBAR GERAL */
+    .app{ display:grid; grid-template-columns: 380px 1fr; gap: 24px; padding: 24px; height: 100vh; overflow: hidden; position: relative; z-index: 1; }
+
+    /* SCROLLBAR */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
-    ::-webkit-scrollbar-corner { background: transparent; }
 
     /* PAINEL */
     .panel{
@@ -67,21 +78,13 @@
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
       border-radius: 24px;
       padding: 20px;
-      position: sticky;
-      top: 18px;
+      position: sticky; top: 18px;
       max-height: calc(100vh - 48px);
-      overflow-y: auto;
-      overflow-x: hidden;
+      overflow-y: auto; overflow-x: hidden;
     }
 
     .panel-header { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    
-    .panel-logo {
-      width: 70px; height: auto; 
-      object-fit: contain;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-    }
-    
+    .panel-logo { width: 70px; height: auto; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
     .panel h2{ margin: 0; font-size: 14px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.9; text-shadow: 0 2px 4px rgba(0,0,0,0.5); line-height: 1.1; white-space: nowrap; }
 
     .field{ margin: 16px 0; padding: 14px; border-radius: 16px; background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.2s; }
@@ -113,8 +116,6 @@
     .rich-input i, .rich-input em { font-style: italic; color: #fff; }
     .reg { font-size: 0.66em; vertical-align: 0.3em; margin-left: 1px; display: inline-block; }
     .rich-input .reg { color: rgba(255,255,255,0.9); } 
-    #eventNameInput span:not(.reg), #middleTextInput span:not(.reg) { font-size: inherit !important; line-height: inherit !important; }
-    /* PREVENT PASTED STYLES */
     #eventNameInput *, #middleTextInput * { font-family: inherit !important; font-size: inherit !important; line-height: inherit !important; color: inherit !important; background: transparent !important; }
 
     .btn{
@@ -124,16 +125,14 @@
     }
     .btn:hover{ background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1)); border-color: rgba(255,255,255,0.4); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
     .btn:active{ transform: translateY(1px); box-shadow: none; }
-    .btn-sm { padding: 8px 12px; font-size: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); }
+    .btn-sm { padding: 8px 12px; font-size: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; gap: 6px; }
     .btn-sm:hover { background: rgba(255,255,255,0.2); }
 
-    #btnDownloadAll, #saveJpg, #btnSaveProject, #btnLoadProject { background: #240046; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
-    #btnDownloadAll:hover, #saveJpg:hover, #btnSaveProject:hover, #btnLoadProject:hover { background: #3c096c; border-color: #fff; box-shadow: 0 0 15px rgba(123, 44, 191, 0.6); transform: translateY(-2px); }
-
     .project-actions { display: flex; gap: 10px; margin-bottom: 24px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 12px; }
-    #btnSaveProject, #btnLoadProject { font-size: 11px; padding: 8px 10px; }
+    #btnSaveProject, #btnLoadProject { font-size: 11px; padding: 8px 10px; background: #240046; border: 1px solid rgba(255, 255, 255, 0.3); }
+    #btnSaveProject:hover, #btnLoadProject:hover { background: #3c096c; border-color: #fff; }
 
-    /* LANGUAGE SWITCHER - BANDEIRAS SVG */
+    /* LANGUAGE SWITCHER */
     .lang-switcher { display: flex; gap: 8px; margin-bottom: 8px; }
     .lang-btn {
       flex: 1; padding: 8px; font-size: 11px; font-weight: 800; border-radius: 8px;
@@ -141,8 +140,8 @@
       color: rgba(255,255,255,0.4); cursor: pointer; transition: all 0.2s;
       display: flex; align-items: center; justify-content: center; gap: 6px;
     }
-    
     .flag-icon { width: 18px; height: 18px; display: inline-block; background-size: contain; background-repeat: no-repeat; background-position: center; filter: grayscale(100%); opacity: 0.6; transition: all 0.2s; }
+    /* SVG FLAGS */
     .flag-br { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 720 500'%3E%3Cpath fill='%23009c3b' d='M0 0h720v500H0z'/%3E%3Cpath fill='%23ffdf00' d='m360 43 318 207L360 457 42 250z'/%3E%3Ccircle fill='%23002776' cx='360' cy='250' r='126'/%3E%3Cpath fill='none' stroke='%23fff' stroke-width='9' d='M255 285c19-14 96-41 210-6'/%3E%3C/svg%3E"); }
     .flag-us { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1235 650'%3E%3Cpath fill='%23b22234' d='M0 0h1235v650H0z'/%3E%3Cpath fill='%23fff' d='M0 50h1235v50H0zm0 100h1235v50H0zm0 100h1235v50H0zm0 100h1235v50H0zm0 100h1235v50H0z'/%3E%3Cpath fill='%233c3b6e' d='M0 0h494v350H0z'/%3E%3C/svg%3E"); }
     .flag-es { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 750 500'%3E%3Cpath fill='%23c60b1e' d='M0 0h750v500H0z'/%3E%3Cpath fill='%23ffc400' d='M0 125h750v250H0z'/%3E%3C/svg%3E"); }
@@ -150,25 +149,18 @@
     .lang-btn:hover .flag-icon { filter: grayscale(0%); opacity: 0.8; }
     .lang-btn.active { background: #5213b9; color: #fff; border-color: rgba(255,255,255,0.3); box-shadow: 0 0 10px rgba(82, 19, 185, 0.4); }
     .lang-btn.active .flag-icon { filter: grayscale(0%); opacity: 1; }
+    /* Flag inside buttons */
+    .btn .flag-icon { filter: grayscale(100%); opacity: 0.6; transition: all 0.2s; }
+    .btn:hover .flag-icon { filter: grayscale(0%); opacity: 1; }
 
-    /* PRESET BUTTONS */
+    /* PRESETS & SWITCHERS */
     .preset-container { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
-    .preset-btn {
-      flex: 1; min-width: 80px; padding: 8px; border-radius: 8px;
-      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-      color: #fff; font-size: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s;
-      display: flex; align-items: center; justify-content: center; gap: 5px;
-    }
+    .preset-btn { flex: 1; min-width: 80px; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; }
     .preset-btn:hover { background: rgba(255,255,255,0.15); transform: translateY(-1px); }
     .preset-btn .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; box-shadow: 0 0 4px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.3); }
 
-    /* LOGO COUNT SWITCHER */
     .logo-count-switcher { display: flex; gap: 4px; margin-bottom: 8px; }
-    .count-btn {
-      flex: 1; padding: 6px; font-size: 10px; font-weight: 700; border-radius: 6px;
-      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-      color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.15s;
-    }
+    .count-btn { flex: 1; padding: 6px; font-size: 10px; font-weight: 700; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.15s; }
     .count-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
     .count-btn.active { background: #7b2cbf; color: #fff; border-color: rgba(255,255,255,0.3); }
 
@@ -209,11 +201,17 @@
     .poster.banner-site { --local-w: 1860px; --local-h: 830px; --ft-btm: 50px; }
     .poster.banner-global { --local-w: 1860px; --local-h: 830px; }
 
-    .poster .bgImage { position:absolute; inset:0; background: linear-gradient(135deg, #eee 0%, #ddd 100%); background-size: cover; background-position: center; z-index: 0; }
+    /* DEFAULT BG - CSS */
+    .poster .bgImage { 
+        position:absolute; inset:0; 
+        background: linear-gradient(135deg, #f5f5f5 0%, #dcdcdc 100%); 
+        background-size: cover; background-position: center; z-index: 0; 
+    }
+    
     .poster .header { position: relative; width: 100%; height: var(--header-h); background: var(--header-color); padding: var(--header-pad); display:flex; z-index: 3; }
     
     .poster .eventName { 
-        margin-top: var(--evt-margin); margin-left: 15px;
+        margin-top: var(--evt-margin); margin-left: 30px;
         font-size: 48px; letter-spacing: .06em; font-weight: 400; text-transform: uppercase; color:#fff; line-height:1.1; 
         overflow-wrap: break-word; word-wrap: break-word; word-break: break-word;
     }
@@ -227,12 +225,11 @@
     .poster .bannerPlaceholder { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color: rgba(255,255,255,.9); font-weight:900; background: rgba(0,0,0,.2); z-index:2; pointer-events:none; }
     .poster .content { position: relative; padding: 92px 90px; z-index: 2; text-align: center; }
     
-    /* MODIFICADO: USA VARIÁVEIS PARA TAMANHO E POSIÇÃO */
     .poster .title { 
-        margin-top: var(--mid-pos-y); /* Controlado pelo slider */
-        margin-bottom: 0;
+        margin-top: var(--mid-pos-y); 
+        margin-left: 0; margin-right: 0; margin-bottom: 0;
         color:#1b1b1b; 
-        font-size: var(--mid-font-size); /* Controlado pelo slider */
+        font-size: var(--mid-font-size); 
         font-weight: 400; letter-spacing: .01em; line-height: 1.2; 
         overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; 
     }
@@ -284,6 +281,12 @@
 </head>
 
 <body>
+  <div class="orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
   <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><div class="loading-text" id="loadingText">PROCESSANDO...</div></div>
   <div id="toast-container"></div>
 
@@ -366,7 +369,7 @@
             <button class="toolBtn" data-cmd="bold" onclick="formatText('bold')" title="Negrito">BOLD</button>
             <button class="toolBtn" data-cmd="italic" onclick="formatText('italic')" title="Itálico">ITÁLICO</button>
           </div>
-          <div id="eventNameInput" class="rich-input" contenteditable="true">NEWS ASH®2025</div>
+          <div id="eventNameInput" class="rich-input" contenteditable="true">Nome do evento</div>
         </div>
 
         <div class="field">
@@ -388,14 +391,25 @@
         </div>
 
         <div class="field">
-          <label>Speaker 1</label>
-          <input id="speakerFile1" type="file" accept="image/*" />
-          <button class="btn" id="clearSpeaker1" style="margin-top:10px;">Remover</button>
-        </div>
-        <div class="field">
-          <label>Speaker 2</label>
-          <input id="speakerFile2" type="file" accept="image/*" />
-          <button class="btn" id="clearSpeaker2" style="margin-top:10px;">Remover</button>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 5px;">
+             <label style="margin:0">Speakers</label>
+             <div class="logo-count-switcher" id="speakerSwitcher">
+                <button class="count-btn" onclick="setSpeakerCount(0)">0</button>
+                <button class="count-btn" onclick="setSpeakerCount(1)">1</button>
+                <button class="count-btn active" onclick="setSpeakerCount(2)">2</button>
+             </div>
+          </div>
+          
+          <div id="speakerField1" class="field" style="margin: 5px 0;">
+            <label style="margin-bottom:4px;">Speaker 1</label>
+            <input id="speakerFile1" type="file" accept="image/*" />
+            <button class="btn" id="clearSpeaker1" style="margin-top:6px;">Remover</button>
+          </div>
+          <div id="speakerField2" class="field" style="margin: 5px 0;">
+            <label style="margin-bottom:4px;">Speaker 2</label>
+            <input id="speakerFile2" type="file" accept="image/*" />
+            <button class="btn" id="clearSpeaker2" style="margin-top:6px;">Remover</button>
+          </div>
         </div>
       </div>
 
@@ -417,7 +431,7 @@
         
         <div style="display:flex; align-items:center; justify-content:space-between; margin:10px 0 5px;">
             <div style="font-size:10px; opacity:0.7;">Apoio (Qtd.):</div>
-            <div class="logo-count-switcher">
+            <div class="logo-count-switcher" id="apoioSwitcher">
                 <button class="count-btn" onclick="setApoioCount(1)">1</button>
                 <button class="count-btn" onclick="setApoioCount(2)">2</button>
                 <button class="count-btn" onclick="setApoioCount(3)">3</button>
@@ -441,9 +455,9 @@
         <button class="btn" id="saveJpg" style="margin-bottom:12px; background: #240046;">Baixar JPG (Visualização Atual)</button>
         
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; margin-bottom:12px">
-            <button class="btn btn-sm" onclick="downloadBatch(['pt'])">PACK PT</button>
-            <button class="btn btn-sm" onclick="downloadBatch(['en'])">PACK EN</button>
-            <button class="btn btn-sm" onclick="downloadBatch(['es'])">PACK ES</button>
+            <button class="btn btn-sm" onclick="downloadBatch(['pt'])"><span class="flag-icon flag-br"></span> PACK PT</button>
+            <button class="btn btn-sm" onclick="downloadBatch(['en'])"><span class="flag-icon flag-us"></span> PACK EN</button>
+            <button class="btn btn-sm" onclick="downloadBatch(['es'])"><span class="flag-icon flag-es"></span> PACK ES</button>
         </div>
         
         <button class="btn" id="btnDownloadAll" style="background: #5213b9; border-color:rgba(255,255,255,0.4);">BAIXAR TUDO (ZIP)</button>
@@ -488,7 +502,7 @@
   <template id="posterTemplate">
     <div class="bgImage"></div>
     <header class="header">
-      <div class="eventName">NEWS ASH®2025</div>
+      <div class="eventName">Nome do evento</div>
     </header>
     <section class="banner">
       <div class="bannerClip">
@@ -525,9 +539,6 @@
     <div class="safe"></div>
   </template>
 
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
   <script>
     "use strict";
 
@@ -554,8 +565,9 @@
     let currentFormat = 'reels';
     let isViewAll = false;
     let apoioCount = 5;
+    let speakerCount = 2; // Default
 
-    // === PRESET FUNCTION (FIXED: Updates ALL Languages) ===
+    // === PRESET FUNCTION ===
     window.applyEventPreset = function(html, color) {
         document.documentElement.style.setProperty('--header-color', color);
         $('#headerHex').value = color;
@@ -565,7 +577,6 @@
         $('#eventNameInput').innerHTML = formatted;
         $all('.eventName').forEach(el => el.innerHTML = formatted);
         
-        // Update ALL languages with the event name
         ['pt', 'en', 'es'].forEach(lang => {
             langData[lang].event = formatted;
         });
@@ -574,12 +585,35 @@
         showToast('PRESET APLICADO (TODOS IDIOMAS)!', 'success');
     };
 
-    window.setApoioCount = function(n) {
-        apoioCount = n;
-        $all('.count-btn').forEach((btn, idx) => {
-            if(idx + 1 === n) btn.classList.add('active');
+    // === SELETORES INDEPENDENTES ===
+    window.setSpeakerCount = function(n) {
+        speakerCount = n;
+        
+        // Usa o seletor ID para garantir que só afeta os botões de Speaker
+        const btns = document.querySelectorAll('#speakerSwitcher .count-btn');
+        btns.forEach((btn) => {
+            if(parseInt(btn.innerText) === n) btn.classList.add('active');
             else btn.classList.remove('active');
         });
+
+        $('#speakerField1').style.display = (n >= 1) ? 'block' : 'none';
+        $('#speakerField2').style.display = (n >= 2) ? 'block' : 'none';
+
+        $all('.speakerSlot1').forEach(s => s.style.display = (n >= 1) ? 'block' : 'none');
+        $all('.speakerSlot2').forEach(s => s.style.display = (n >= 2) ? 'block' : 'none');
+
+        saveDraft();
+    };
+
+    window.setApoioCount = function(n) {
+        apoioCount = n;
+        // Usa o seletor ID para garantir que só afeta os botões de Apoio
+        const btns = document.querySelectorAll('#apoioSwitcher .count-btn');
+        btns.forEach((btn) => {
+             if(parseInt(btn.innerText) === n) btn.classList.add('active');
+             else btn.classList.remove('active');
+        });
+
         $all('#apoioInputGroup input').forEach((inp, idx) => {
             inp.style.display = (idx < n) ? 'block' : 'none';
         });
@@ -597,9 +631,9 @@
     };
 
     let langData = {
-      pt: { event: 'NEWS ASH®2025', middle: 'Texto para inserir notícia.' },
-      en: { event: 'NEWS ASH®2025', middle: 'Insert news text here.' },
-      es: { event: 'NEWS ASH®2025', middle: 'Inserte el texto de la noticia.' }
+      pt: { event: 'Nome do evento', middle: 'Texto para inserir notícia.' },
+      en: { event: 'Nome do evento', middle: 'Insert news text here.' },
+      es: { event: 'Nome do evento', middle: 'Inserte el texto de la noticia.' }
     };
 
     let activeLanguages = new Set(['pt']); 
@@ -612,13 +646,11 @@
     }
 
     window.switchLang = function(lang) {
-      // SAVE current inputs to memory BEFORE switching
       langData[currentLang].event = $('#eventNameInput').innerHTML;
       langData[currentLang].middle = $('#middleTextInput').innerHTML;
 
       currentLang = lang;
       
-      // LOAD new lang data to inputs
       $('#eventNameInput').innerHTML = styleRegSymbol(langData[lang].event);
       $('#middleTextInput').innerHTML = styleRegSymbol(langData[lang].middle);
       
@@ -759,7 +791,8 @@
         bgColor: $('#bgHex').value,
         imgState: imgState, 
         apoioCount: apoioCount,
-        typography: { // SAVING TYPOGRAPHY STATE
+        speakerCount: speakerCount,
+        typography: { 
             midSize: document.documentElement.style.getPropertyValue('--mid-font-size'),
             midPos: document.documentElement.style.getPropertyValue('--mid-pos-y')
         },
@@ -806,6 +839,7 @@
           }
 
           if(data.apoioCount) setApoioCount(data.apoioCount);
+          if(data.speakerCount !== undefined) setSpeakerCount(data.speakerCount);
 
           if(data.typography) {
               if(data.typography.midSize) {
@@ -880,7 +914,7 @@
         headerColor: $('#headerHex').value,
         bgColor: $('#bgHex').value,
         apoioCount: apoioCount,
-        // SAVE TYPOGRAPHY TO DRAFT
+        speakerCount: speakerCount,
         typography: {
             midSize: document.documentElement.style.getPropertyValue('--mid-font-size'),
             midPos: document.documentElement.style.getPropertyValue('--mid-pos-y')
@@ -903,6 +937,7 @@
           document.documentElement.style.setProperty('--bg-color', d.bgColor);
         }
         if(d.apoioCount) setApoioCount(d.apoioCount);
+        if(d.speakerCount !== undefined) setSpeakerCount(d.speakerCount);
         
         if(d.typography) {
             if(d.typography.midSize) {
@@ -981,14 +1016,17 @@
           else target.textContent = val;
         });
         
-        if(targetClass === 'eventName') langData[currentLang].event = val;
-        if(targetClass === 'middleTitle') langData[currentLang].middle = val;
+        if(targetClass === 'eventName') {
+            ['pt', 'en', 'es'].forEach(l => langData[l].event = val);
+        } else if(targetClass === 'middleTitle') {
+            langData[currentLang].middle = val;
+        }
+        
         saveDraft(); 
       };
       el.addEventListener('input', update);
     }
     
-    // TYPOGRAPHY CONTROLS
     $('#midTextSize').addEventListener('input', (e) => {
         document.documentElement.style.setProperty('--mid-font-size', e.target.value + 'px');
         saveDraft();
@@ -998,7 +1036,6 @@
         saveDraft();
     });
 
-    // PREVENT RICH TEXT PASTE
     [document.getElementById('eventNameInput'), document.getElementById('middleTextInput')].forEach(el => {
        el.addEventListener('paste', function(e) {
            e.preventDefault();
@@ -1110,7 +1147,7 @@
       bindImage('speakerFile1', 'speakerImg1');
       bindImage('speakerFile2', 'speakerImg2');
 
-      // Default BG
+      // Default BG cleanup
       $all('.bgImage').forEach(d => {
          if(!d.style.backgroundImage) d.style.backgroundImage = 'none';
       });
@@ -1138,10 +1175,14 @@
         imgState.bannerHoriz = {x:0, y:0, scale:1};
         $('#bannerZoom').value=1;
       };
+      
       $('#clearBg').onclick = () => { 
-        $all('.bgImage').forEach(d => d.style.backgroundImage='none'); 
+        $all('.bgImage').forEach(d => {
+            d.style.backgroundImage = 'none'; 
+        }); 
         $('#bgFile').value=''; 
       };
+
       $('#clearSpeaker1').onclick = () => {
         $all('.speakerImg1').forEach(img => { img.src=''; img.style.display='none'; img.nextElementSibling.style.display='flex'; img.closest('.speakerSlot').classList.remove('hasImage'); });
         $('#speakerFile1').value='';
@@ -1224,6 +1265,17 @@
       const bph = clone.querySelector('.bannerPlaceholder');
       if(bph) bph.style.display = 'none';
 
+      // FORCE HIDE SPEAKER PLACEHOLDER FOR DOWNLOAD
+      clone.querySelectorAll('.speakerPlaceholder').forEach(ph => ph.style.display = 'none');
+
+      // FORCE HIDE SPEAKER SLOTS IF COUNT IS 0
+      if (typeof speakerCount !== 'undefined') {
+          const s1 = clone.querySelector('.speakerSlot1');
+          const s2 = clone.querySelector('.speakerSlot2');
+          if (s1) s1.style.display = (speakerCount >= 1) ? 'block' : 'none';
+          if (s2) s2.style.display = (speakerCount >= 2) ? 'block' : 'none';
+      }
+
       const logoBar = clone.querySelector('.logosBar');
       if(logoBar) {
         logoBar.style.boxShadow = 'none'; logoBar.style.border = 'none';
@@ -1267,6 +1319,17 @@
       clone.style.transform = 'none'; clone.style.width = '100%'; clone.style.height = '100%'; clone.style.margin = '0'; clone.style.boxShadow = 'none';
       
       const bph = clone.querySelector('.bannerPlaceholder'); if(bph) bph.style.display = 'none';
+
+      // FORCE HIDE SPEAKER PLACEHOLDER FOR DOWNLOAD
+      clone.querySelectorAll('.speakerPlaceholder').forEach(ph => ph.style.display = 'none');
+
+      // FORCE HIDE SPEAKER SLOTS IF COUNT IS 0
+      if (typeof speakerCount !== 'undefined') {
+          const s1 = clone.querySelector('.speakerSlot1');
+          const s2 = clone.querySelector('.speakerSlot2');
+          if (s1) s1.style.display = (speakerCount >= 1) ? 'block' : 'none';
+          if (s2) s2.style.display = (speakerCount >= 2) ? 'block' : 'none';
+      }
 
       const logoBar = clone.querySelector('.logosBar');
       if(logoBar) { logoBar.style.boxShadow='none'; logoBar.style.border='none'; logoBar.querySelectorAll('.tag').forEach(t => t.style.color='#000000'); }
